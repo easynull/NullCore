@@ -1,5 +1,6 @@
 package com.mw.nullcore;
 
+import com.mw.nullcore.core.components.NullComponents;
 import com.mw.nullcore.utils.ClientUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -20,6 +21,7 @@ public final class Nullcore {
     public Nullcore(IEventBus bus) {
         bus.addListener(this::start);
         bus.addListener(this::client);
+        NullComponents.components.register(bus);
         items.register(bus);
     }
 

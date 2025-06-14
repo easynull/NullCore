@@ -4,6 +4,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.neoforged.gradle.userdev' version '7.0.173'
+    id 'com.modrinth.minotaur' version "2.8.+"
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -40,6 +41,19 @@ configurations {
 
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
+}
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "${mod_id}"
+    versionNumber = "${mod_version}"
+    versionType = "release"
+    uploadFile = jar
+    gameVersions = ["1.21.4"]
+    loaders = ["neoforge"]
+    dependencies {
+        required.project "neoforge"
+    }
 }
 
 tasks.withType(ProcessResources).configureEach {
