@@ -4,13 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [ "1.21.4-neoforge" ]
-    paths:
-      - 'build.gradle'
-      - 'gradle.properties'
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   release:
@@ -19,20 +15,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit message
+        id: commit_message
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "COMMIT_MESSAGE=${COMMIT_MSG}" >> $GITHUB_ENV
 
       - name: Extract versions from Gradle
         id: get_version
         run: |
           MOD_VERSION=$(grep -oP 'mod_version\s*=\s*\K.+' gradle.properties)
           MC_VERSION=$(grep -oP 'minecraft_version\s*=\s*\K.+' gradle.properties)
-          VERSION=$MOD_VERSION # Combined version for release tag
-          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV # Sets environment variable
-          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV # Sets environment variable
+          VERSION=$MOD_VERSION
+          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
+          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "mod_version=$MOD_VERSION" >> $GITHUB_OUTPUT # Sets output variable
-          echo "minecraft_version=$MC_VERSION" >> $GITHUB_OUTPUT # Sets output variable
+          echo "mod_version=$MOD_VERSION" >> $GITHUB_OUTPUT
+          echo "minecraft_version=$MC_VERSION" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-        shell: bash
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -63,14 +66,14 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           name: Release ${{ env.VERSION }}
-          body: ${{ env.COMMIT_MESSAGE }}
+          body: |
+            ${{ env.COMMIT_MESSAGE }}
           draft: false
           prerelease: false
           files: build/libs/*-${{ env.MOD_VERSION }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  modrinth:
+  publish-modrinth:
     needs: release
     environment: Release
     runs-on: ubuntu-latest
@@ -97,38 +100,6 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Publish to Modrinth
-        run: ./gradlew build publishToMavenLocal
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-
-  maven:
-    needs: release
-    environment: Release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: 21
-
-      - name: Restore Gradle Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('/*.gradle*','/gradle-wrapper.properties') }}
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
-
-      - name: Publish Maven
-        run: ./gradlew publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew modrinth
