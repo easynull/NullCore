@@ -102,4 +102,4 @@ jobs:
       - name: Publish to Modrinth
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }} # Modrinth API token
-        run: ./gradlew modrinthPublish # Publishes to Modrinth
+        run: ./gradlew publish # Publishes to Modrinth
