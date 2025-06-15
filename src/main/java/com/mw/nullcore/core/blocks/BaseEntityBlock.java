@@ -24,6 +24,6 @@ public class BaseEntityBlock extends Block implements EntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return Tickable.getTicker();
+        return be == type ? Tickable.getTicker() : null;
     }
 }

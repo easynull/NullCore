@@ -25,7 +25,7 @@ public abstract class NullScreen extends Screen {
     public void render(GuiGraphics gg, int mouseX, int mouseY, float pTicks) {
         renderBackground(gg, mouseX, mouseY, pTicks);
         start();
-        if(animIDs != null) {
+        if (animIDs != null) {
             ticks = (float) Mth.clamp(Math.pow(ticks + 0.4, 2.2d), 0, 1);
             for (int id : animIDs) {
                 switch (id) {

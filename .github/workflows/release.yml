@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
   push:
-    branches: [ 1.21.4-neoforge ]
+    branches: [ "1.21.4-neoforge" ]
     paths:
       - 'build.gradle'
 
@@ -50,21 +50,3 @@ jobs:
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: ./gradlew build
-
-      #      - name: Read Modrinth URL
-      #        id: get_modrinth_url
-      #        run: |
-      #          URL=$(cat build/modrinth_url.txt)
-      #          echo "url=$URL" >> $GITHUB_OUTPUT
-
-      #      - name: Create GitHub Release
-      #        id: create_release
-      #        uses: softprops/action-gh-release@v2
-      #        with:
-      #          tag_name: ${{ steps.get_version.outputs.mod_version }}
-      #          name: ${{ steps.get_version.outputs.mod_version }}
-      #          body_path: CHANGELOG.md
-      #          files: |
-      #            build/libs/*${{ steps.get_version.outputs.mod_version }}*.jar
-      #        env:
-      #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
