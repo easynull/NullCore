@@ -97,7 +97,7 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Publish to Modrinth
-        run: ./gradlew build
+        run: ./gradlew build publishToMavenLocal
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
 
