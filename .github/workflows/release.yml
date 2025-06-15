@@ -1,84 +1,46 @@
 name: Release Mod
 
 on:
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch:
   push:
-    branches: [ "1.21.4-neoforge" ] # Trigger on pushes to this branch
+    branches: [ "1.21.4-neoforge" ]
     paths:
       - 'build.gradle'
-      - 'gradle.properties' # Include this to trigger on version changes
+      - 'gradle.properties'
 
 permissions:
-  contents: write # Required to create releases
+  contents: write
+  packages: write
 
 jobs:
-  build:
-    environment: Release # Optional, defines an environment
-    runs-on: ubuntu-latest # Runs on Ubuntu Linux
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      mod_version: ${{ steps.get_version.outputs.mod_version }}
+      minecraft_version: ${{ steps.get_version.outputs.minecraft_version }}
+      version: ${{ steps.get_version.outputs.version }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4 # Checks out the repository
+      - uses: actions/checkout@v4
 
       - name: Extract versions from Gradle
-        id: get_version # Unique ID for this step
+        id: get_version
         run: |
           MOD_VERSION=$(grep -oP 'mod_version\s*=\s*\K.+' gradle.properties)
           MC_VERSION=$(grep -oP 'minecraft_version\s*=\s*\K.+' gradle.properties)
-          VERSION=$MOD_VERSION-$MC_VERSION # Combined version for release tag
-          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV # Sets environment variable
-          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV # Sets environment variable
+          VERSION=$MOD_VERSION
+          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
+          echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "mod_version=$MOD_VERSION" >> $GITHUB_OUTPUT # Sets output variable
-          echo "minecraft_version=$MC_VERSION" >> $GITHUB_OUTPUT # Sets output variable
+          echo "mod_version=$MOD_VERSION" >> $GITHUB_OUTPUT
+          echo "minecraft_version=$MC_VERSION" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-        shell: bash # Explicitly use bash
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4 # Sets up Java environment
-        with:
-          distribution: 'temurin' # Uses Temurin JDK
-          java-version: 21 # Sets Java version to 21
-
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3 # Caches Gradle dependencies
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('/*.gradle*','/gradle-wrapper.properties') }} # Cache key
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3 # Sets up Gradle
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew # Make gradlew executable
-
-      - name: Build the mod
-        run: ./gradlew build # Builds the mod
-
-      - name: Create Release
-        id: create_release # Unique ID for this step
-        uses: softprops/action-gh-release@v1 # Creates a GitHub release
-        with:
-          tag_name: ${{ env.VERSION }} # Uses combined version as tag
-          name: Release ${{ env.VERSION }} # Release name
-          body: |
-            Release of version ${{ env.VERSION }}
-
-            - Add your changelog here.
-          draft: false # Publish the release immediately
-          prerelease: false  # or true if it's a pre-release
-          files: build/libs/*-${{ env.MOD_VERSION }}.jar # Path to your mod JAR (adjust if needed)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Access token for GitHub API
-
-  publish-modrinth:
-    needs: build # Ensure build job completes successfully first
-    environment: Release
+  build:
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # Checks out the repository
+      - uses: actions/checkout@v4
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -86,8 +48,8 @@ jobs:
           distribution: 'temurin'
           java-version: 21
 
-      - name: Restore Gradle Cache
-        uses: actions/cache@v3 # Restore gradle cache
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
@@ -95,11 +57,43 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('/*.gradle*','/gradle-wrapper.properties') }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3 # Sets up Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew # Make gradlew executable
-      - name: Publish to Modrinth
+        run: chmod +x ./gradlew
+
+      - name: Build and publish artifacts
+        run: ./gradlew build publishAllPublicationsToMavenRepository publishModrinth
         env:
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }} # Modrinth API token
-        run: ./gradlew publish # Publishes to Modrinth
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-outputs
+          path: |
+            build/libs/*.jar
+            build/publications/**/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-outputs
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: Release ${{ needs.prepare.outputs.version }}
+          body: |
+            Changelog: [Compare changes](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${{ steps.previous_tag.outputs.previous_tag }}...${{ github.ref }})
+          draft: false
+          prerelease: false
+          files: build/libs/*-${{ needs.prepare.outputs.mod_version }}.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
