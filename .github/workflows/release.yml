@@ -73,7 +73,8 @@ jobs:
           files: build/libs/*-${{ env.MOD_VERSION }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  publish-modrinth:
+
+  modrinth:
     needs: release
     environment: Release
     runs-on: ubuntu-latest
@@ -100,6 +101,6 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Publish to Modrinth
+        run: ./gradlew modrinth
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-        run: ./gradlew modrinth
