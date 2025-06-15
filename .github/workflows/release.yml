@@ -63,15 +63,14 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           name: Release ${{ env.VERSION }}
-          body: |
-            Changelog: [Compare changes](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${{ steps.previous_tag.outputs.previous_tag }}...${{ github.ref }})
+          body: ${{ env.COMMIT_MESSAGE }}
           draft: false
           prerelease: false
           files: build/libs/*-${{ env.MOD_VERSION }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  publish-modrinth:
+  modrinth:
     needs: release
     environment: Release
     runs-on: ubuntu-latest
@@ -98,11 +97,11 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
       - name: Publish to Modrinth
+        run: ./gradlew build
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-        run: ./gradlew publish
 
-  publish-maven:
+  maven:
     needs: release
     environment: Release
     runs-on: ubuntu-latest
@@ -129,7 +128,7 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Publish to GitHub Packages
-        run: ./gradlew publishToMavenCentral
+      - name: Publish Maven
+        run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
