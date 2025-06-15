@@ -51,6 +51,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3 # Sets up Gradle
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew # Make gradlew executable
+
       - name: Build the mod
         run: ./gradlew build # Builds the mod
 
@@ -94,6 +97,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3 # Sets up Gradle
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew # Make gradlew executable
       - name: Publish to Modrinth
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }} # Modrinth API token
