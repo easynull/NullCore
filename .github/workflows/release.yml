@@ -35,7 +35,7 @@ jobs:
           echo "mod_version=$MOD_VERSION" >> $GITHUB_OUTPUT
           echo "minecraft_version=$MC_VERSION" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-
+        shell: bash
   build:
     needs: prepare
     runs-on: ubuntu-latest
