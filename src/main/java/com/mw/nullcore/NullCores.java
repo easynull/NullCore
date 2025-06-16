@@ -5,15 +5,20 @@ import com.mw.nullcore.utils.ClientUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
-@Mod(NullCore.ID)
-public final class NullCore {
+@Mod(NullCores.ID)
+public final class NullCores {
     public static final String ID = "nullcore";
 
-    public NullCore(IEventBus bus) {
+    public NullCores(IEventBus bus) {
+        bus.addListener(this::setup);
         bus.addListener(this::client);
         NullComponents.components.register(bus);
+    }
+
+    void setup(final FMLCommonSetupEvent event) {
     }
 
     void client(final FMLClientSetupEvent event) {

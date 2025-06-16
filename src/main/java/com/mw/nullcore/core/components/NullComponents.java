@@ -8,7 +8,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 
-import static com.mw.nullcore.NullCore.ID;
+import static com.mw.nullcore.NullCores.ID;
 
 public final class NullComponents {
     public static final DeferredRegister.DataComponents components = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, ID);
