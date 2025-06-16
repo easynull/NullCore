@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BaseEntityBlock extends Block implements EntityBlock {
     final BlockEntityType.BlockEntitySupplier be;
 
-    public BaseEntityBlock(Properties properties, BlockEntityType.BlockEntitySupplier be) {
-        super(properties);
+    public BaseEntityBlock(Properties prop, BlockEntityType.BlockEntitySupplier be) {
+        super(prop);
         this.be = be;
     }
 

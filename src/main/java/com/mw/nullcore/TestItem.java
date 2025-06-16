@@ -1,6 +1,7 @@
 package com.mw.nullcore;
 
-import com.mw.nullcore.utils.BlockUtils;
+import com.mw.nullcore.core.items.BlueprintActivator;
+import com.mw.nullcore.core.multiblocks.Blueprint;
 import com.mw.nullcore.utils.TextUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -15,7 +16,7 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 
-public final class TestItem extends Item {
+public final class TestItem extends Item implements BlueprintActivator {
     public TestItem(Properties properties) {
         super(properties);
     }
@@ -25,11 +26,8 @@ public final class TestItem extends Item {
         Level level = context.getLevel();
         Player player = context.getPlayer();
         BlockPos pos = context.getClickedPos();
-        if (!level.isClientSide && player != null) {
-            BlockUtils.forEachCube(pos, 1, (p)-> level.destroyBlock(p, false));
-            return InteractionResult.SUCCESS;
-        }
-        return InteractionResult.FAIL;
+        activateMB(level, pos, player, context.getItemInHand());
+        return InteractionResult.SUCCESS;
     }
 
     @Override

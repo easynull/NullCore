@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class SaveDataBlock extends BaseEntityBlock {
+
     public SaveDataBlock(Properties prop, BlockEntityType.BlockEntitySupplier be) {
         super(prop, be);
     }

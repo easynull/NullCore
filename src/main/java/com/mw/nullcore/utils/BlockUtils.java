@@ -46,14 +46,4 @@ public final class BlockUtils {
     public static boolean isFluid(BlockState state) {
         return state.getFluidState().isSource();
     }
-
-    public static Direction[] getHorizontals() {
-        HashSet<Direction> check = new HashSet<>();
-        for (Direction face : Direction.values()) {
-            if (face == Direction.NORTH || face == Direction.EAST || face == Direction.SOUTH || face == Direction.WEST) {
-                check.add(face);
-            }
-        }
-        return check.toArray(new Direction[0]);
-    }
 }
