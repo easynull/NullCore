@@ -1,6 +1,6 @@
 package com.mw.nullcore.core.menu;
 
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -10,19 +10,19 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class NullMenu extends AbstractContainerMenu {
     protected final int startIndex;
-    protected final Inventory playerInv;
+    protected final Container container;
 
-    protected NullMenu(@Nullable MenuType<?> menuType, int containerId, Inventory playerInv) {
-        super(menuType, containerId);
-        this.playerInv = playerInv;
+    protected NullMenu(@Nullable MenuType<?> menuType, int id, Container container) {
+        super(menuType, id);
+        this.container = container;
         this.startIndex = this.slots.size();
-        addPlayerInventory(playerInv);
-        addMenuSlots(playerInv);
+        addPlayerInventory(container);
+        addMenuSlots(container);
     }
 
-    protected abstract void addMenuSlots(Inventory inv);
+    protected abstract void addMenuSlots(Container inv);
 
-    private void addPlayerInventory(Inventory playerInv) {
+    private void addPlayerInventory(Container playerInv) {
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
                 this.addSlot(new Slot(playerInv, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
@@ -61,6 +61,6 @@ public abstract class NullMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return playerInv.stillValid(player);
+        return container.stillValid(player);
     }
 }

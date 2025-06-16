@@ -7,11 +7,11 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
-@Mod(Nullcore.ID)
-public final class Nullcore {
+@Mod(NullCore.ID)
+public final class NullCore {
     public static final String ID = "nullcore";
 
-    public Nullcore(IEventBus bus) {
+    public NullCore(IEventBus bus) {
         bus.addListener(this::client);
         NullComponents.components.register(bus);
     }

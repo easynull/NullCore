@@ -1,3 +1,2 @@
-### - Added Blueprint system
-### - Added abstract Menu class
-### - Added abstract BlockEntity class
+### - Fixed Blocks class
+### - Fixed Blocks class

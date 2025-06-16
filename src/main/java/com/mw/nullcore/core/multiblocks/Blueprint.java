@@ -46,7 +46,7 @@ public interface Blueprint {
         return (T) registry.get(id);
     }
 
-    default void applyResult(Level level, BlockPos pos, Object result, @Nullable Direction facing) {
+    default void applyResult(Level level, BlockPos pos, Object result, Direction facing) {
         if (result instanceof Block block) {
             BlockState state = block.defaultBlockState();
             if (facing != null && state.hasProperty(HorizontalDirectionalBlock.FACING)) {
@@ -63,7 +63,7 @@ public interface Blueprint {
     }
 
     record Structure(int xOffset, int yOffset, int zOffset, Direction facing) {}
-    record Result(Object required, @Nullable Object result) {}
+    record Result(Object required, Object result) {}
 
     class Rotation {
         int rows;

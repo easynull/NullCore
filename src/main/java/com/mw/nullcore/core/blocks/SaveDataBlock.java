@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class SaveDataBlock extends BaseEntityBlock {
+public abstract class SaveDataBlock extends InteractionBlock {
 
     public SaveDataBlock(Properties prop, BlockEntityType.BlockEntitySupplier be) {
         super(prop, be);
