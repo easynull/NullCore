@@ -26,7 +26,7 @@ public interface Blueprint {
     @Nullable
     Direction validateStructure(Level level, BlockPos centerPos);
 
-    void onBuilt(Level level, BlockPos startPos, Structure structure, ParticleOptions destroyParticle);
+    void onBuilt(Level level, BlockPos startPos, Structure structure, ParticleOptions destroyParticle, Object... other);
 
     Structure getStructure(Level level, BlockPos centerPos);
 

@@ -22,15 +22,18 @@ public class BaseMultiBlock implements Blueprint {
     final int ySize;
     final int zSize;
     final Item activator;
+    public final Object[] other;
     TriPredicate<Player, Level, ItemStack> condition = null;
 
-    public BaseMultiBlock(String id, Object[][][] structure, Item activator) {
+    public BaseMultiBlock(String id, Object[][][] structure, Item activator, Object... other) {
         this.id = id;
         this.structure = structure;
-        ySize = structure.length;
-        xSize = structure[0].length;
-        zSize = structure[0][0].length;
+        this.ySize = structure.length;
+        this.xSize = structure[0].length;
+        this.zSize = structure[0][0].length;
         this.activator = activator;
+        this.other = other;
+
     }
 
     @Override
@@ -93,7 +96,7 @@ public class BaseMultiBlock implements Blueprint {
     }
 
     @Override
-    public void onBuilt(Level level, BlockPos startPos, Structure structure, ParticleOptions destroyParticle) {
+    public void onBuilt(Level level, BlockPos startPos, Structure structure, ParticleOptions destroyParticle, Object... other) {
         if (structure == null) return;
         BlockPos p2 = startPos.offset(structure.xOffset(), structure.yOffset(), structure.zOffset());
         for (byte y = 0; y < ySize; ++y) {

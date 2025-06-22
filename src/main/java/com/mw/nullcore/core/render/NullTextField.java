@@ -23,6 +23,10 @@ public final class NullTextField extends AbstractWidget {
         this.colorCursor = colorCursor;
     }
 
+    public NullTextField(int x, int y, int width, int height, Component message, Consumer<String> current) {
+        this(x, y, width, height, message, current, 0xFFFFFFFF, 0xFFFFFFFF);
+    }
+
     @Override
     protected void renderWidget(GuiGraphics gg, int mouseX, int mouseY, float pTick) {
         String visibleText = font.plainSubstrByWidth(value, width - 8);

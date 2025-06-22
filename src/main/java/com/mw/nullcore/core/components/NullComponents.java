@@ -13,5 +13,5 @@ import static com.mw.nullcore.NullCore.ID;
 public final class NullComponents {
     public static final DeferredRegister.DataComponents components = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, ID);
 
-    public static Supplier<DataComponentType<CompoundTag>> nbt = components.registerComponentType("nbt", builder -> builder.persistent(CompoundTag.CODEC).networkSynchronized(ByteBufCodecs.fromCodec(CompoundTag.CODEC)));
+    public static final Supplier<DataComponentType<CompoundTag>> nbt = components.registerComponentType("nbt", builder -> builder.persistent(CompoundTag.CODEC).networkSynchronized(ByteBufCodecs.fromCodec(CompoundTag.CODEC)));
 }

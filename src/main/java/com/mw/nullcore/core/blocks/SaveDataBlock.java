@@ -25,7 +25,7 @@ public abstract class SaveDataBlock extends InteractionBlock {
         if(level.getBlockEntity(pos) instanceof BlockEntity be) {
             CompoundTag nbt = be.saveCustomOnly(level.registryAccess());
             CompoundTag additional = additionalData(level, pos, state, player, stack);
-            if (additional != null){
+            if (additional != null && !additional.isEmpty()){
                 for (String key : additional.getAllKeys()) {
                     nbt.put(key, additional.get(key).copy());
                 }
@@ -37,11 +37,11 @@ public abstract class SaveDataBlock extends InteractionBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
         if(level.getBlockEntity(pos) instanceof BlockEntity be && stack.has(NullComponents.nbt)) {
             be.loadCustomOnly(stack.get(NullComponents.nbt), level.registryAccess());
             additionalActions(level, pos, state, placer, stack);
         }
+        super.setPlacedBy(level, pos, state, placer, stack);
     }
 
     protected CompoundTag additionalData(LevelReader level, BlockPos pos, BlockState state, Player player, ItemStack stack){
