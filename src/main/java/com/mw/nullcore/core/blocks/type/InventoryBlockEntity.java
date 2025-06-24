@@ -1,4 +1,4 @@
-package com.mw.nullcore.core.blocks.entities;
+package com.mw.nullcore.core.blocks.type;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.BlockPos;

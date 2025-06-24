@@ -54,12 +54,15 @@ public interface Blueprint {
             }
             level.setBlock(pos, state, Block.UPDATE_CLIENTS);
         } else if (result instanceof Item item) {
-            ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(item));
-            entity.setGlowingTag(true);
-            entity.setNoGravity(true);
-            entity.setDeltaMovement(0, 0, 0);
-            level.addFreshEntity(entity);
+            applyItemResult(level, pos, item);
         }
+    }
+
+    default void applyItemResult(Level level, BlockPos pos, Item item){
+        ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(item));
+        entity.setNoGravity(true);
+        entity.setDeltaMovement(0, 0, 0);
+        level.addFreshEntity(entity);
     }
 
     record Structure(int xOffset, int yOffset, int zOffset, Direction facing) {}

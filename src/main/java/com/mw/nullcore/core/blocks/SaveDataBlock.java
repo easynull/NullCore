@@ -1,6 +1,6 @@
 package com.mw.nullcore.core.blocks;
 
-import com.mw.nullcore.core.components.NullComponents;
+import com.mw.nullcore.core.NullComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;

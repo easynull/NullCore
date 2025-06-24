@@ -1,4 +1,4 @@
-package com.mw.nullcore.core.menu;
+package com.mw.nullcore.client.menu;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +20,7 @@ public abstract class NullMenu extends AbstractContainerMenu {
         addMenuSlots(container);
     }
 
-    protected abstract void addMenuSlots(Container inv);
+    protected abstract void addMenuSlots(Container container);
 
     private void addPlayerInventory(Container playerInv) {
         for (int row = 0; row < 3; ++row) {

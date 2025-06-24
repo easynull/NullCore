@@ -6,13 +6,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public interface BlueprintActivator {
-
-    default void activateMB(Level level, BlockPos pos, Player player, ItemStack stack) {
+public interface Blueprinter {
+    default void constructed(Level level, BlockPos pos, Player player, ItemStack stack) {
         if (!level.isClientSide && player != null) {
             for (Blueprint bb : Blueprint.registry.values()) {
                 if (bb.canActivate(player, level, stack)) {
                     Blueprint.Structure structure = bb.getStructure(level, pos);
+                    if (structure == null) return;
                     bb.onBuilt(level, pos, structure, null);
                 }
             }

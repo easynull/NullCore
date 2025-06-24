@@ -1,8 +1,6 @@
 package com.mw.nullcore.utils;
 
-import net.minecraft.client.Minecraft;
-
-import java.io.FileFilter;
+import java.awt.*;
 
 public final class ColorUtils {
     /**
@@ -25,5 +23,37 @@ public final class ColorUtils {
 
     public static int packARGB(float red, float green, float blue, float alpha) {
         return ((int)(alpha * 255) << 24) | ((int)(red * 255) << 16) | ((int)(green * 255) << 8) | (int)(blue * 255);
+    }
+
+    /**
+     * @param colors array[] of RGB colors for transitions between them
+     * @param per duration (in ticks) of each color transition
+     * @return interpolated color between the current and next point in the array
+     */
+    public static int arrayColor(int[] colors, float per){
+        float progress = (ClientUtils.clientTick % per) / per;
+        int index1 = (int) (ClientUtils.clientTick / per) % colors.length;
+        int index2 = (index1 + 1) % colors.length;
+
+        float[] argb1 = unpackRGBA(colors[index1] | 0xFF000000);
+        float[] argb2 = unpackRGBA(colors[index2] | 0xFF000000);
+
+        float red = argb1[1] + (argb2[1] - argb1[1]) * progress;
+        float green = argb1[2] + (argb2[2] - argb1[2]) * progress;
+        float blue = argb1[3] + (argb2[3] - argb1[3]) * progress;
+        return ((int)(red * 255) << 16) | ((int)(green * 255) << 8) | (int)(blue * 255);
+    }
+
+    public static int getRainbowColor(float per) {
+        int[] colors = new int[255];
+        for (int i = 0; i < 255; i++) {
+            float hue = (float) i / 255;
+            colors[i] = Color.HSBtoRGB(hue, 1.0f, 1.0f) & 0xFFFFFF;
+        }
+        return arrayColor(colors, per);
+    }
+
+    public static int getRainbowColor() {
+        return getRainbowColor(0.75f);
     }
 }

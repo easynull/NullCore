@@ -1,4 +1,4 @@
-package com.mw.nullcore.core.render;
+package com.mw.nullcore.client.render;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -40,7 +40,7 @@ public final class NullTextField extends AbstractWidget {
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {}
+    protected void updateWidgetNarration(NarrationElementOutput elements) {}
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {

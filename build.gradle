@@ -92,29 +92,6 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-
-//        tasks.register('deployMods', Copy) {
-//            def projects = System.getenv("PROJECTS")
-//            def targetDirs = ["${projects}/Atherys/libs"]
-//            dependsOn jar
-//            doFirst {
-//                targetDirs.each { path ->
-//                        def dir = file(path)
-//                    if (dir.exists() && dir.isDirectory()) {
-//                        dir.listFiles({ file ->
-//                                file.name.startsWith("${mod_name}") && file.name.endsWith('.jar')
-//                        } as FileFilter)?.each {oldFile ->
-//                                oldFile.delete()
-//                        }
-//                    }
-//                }
-//            }
-//            from jar.archiveFile.get().asFile
-//            targetDirs.each { path ->
-//                    def dir = file(path)
-//                into dir
-//            }
-
 idea {
     module {
         downloadSources = true

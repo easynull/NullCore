@@ -1,6 +1,6 @@
 package com.mw.nullcore.core.blocks;
 
-import com.mw.nullcore.core.blocks.entities.InventoryBlockEntity;
+import com.mw.nullcore.core.blocks.type.InventoryBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;

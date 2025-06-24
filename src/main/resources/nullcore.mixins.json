@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8.4",
+  "package": "com.mw.nullcore.core.mixins",
+  "compatibilityLevel": "JAVA_18",
+  "client": [
+    "GuiGraphicsMixin",
+    "TitleScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "nullcore.refmap.json"
+}

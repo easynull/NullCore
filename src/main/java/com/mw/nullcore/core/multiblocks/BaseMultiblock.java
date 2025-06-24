@@ -1,9 +1,10 @@
 package com.mw.nullcore.core.multiblocks;
 
-import com.mw.nullcore.core.items.BlueprintActivator;
+import com.mw.nullcore.core.items.Blueprinter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -15,25 +16,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.TriPredicate;
 import org.jetbrains.annotations.Nullable;
 
-public class BaseMultiBlock implements Blueprint {
+public class BaseMultiblock implements Blueprint {
     final Object[][][] structure;
     final String id;
     final int xSize;
     final int ySize;
     final int zSize;
     final Item activator;
-    public final Object[] other;
     TriPredicate<Player, Level, ItemStack> condition = null;
 
-    public BaseMultiBlock(String id, Object[][][] structure, Item activator, Object... other) {
+    public BaseMultiblock(String id, Object[][][] structure, Item activator) {
         this.id = id;
         this.structure = structure;
         this.ySize = structure.length;
         this.xSize = structure[0].length;
         this.zSize = structure[0][0].length;
         this.activator = activator;
-        this.other = other;
-
     }
 
     @Override
@@ -100,14 +98,19 @@ public class BaseMultiBlock implements Blueprint {
         if (structure == null) return;
         BlockPos p2 = startPos.offset(structure.xOffset(), structure.yOffset(), structure.zOffset());
         for (byte y = 0; y < ySize; ++y) {
-            Rotation bRot = new Rotation(this.structure[y]);
-            bRot.rotateRight(3 - structure.facing().get2DDataValue());
-            for (byte x = 0; x < bRot.rows; ++x) {
-                for (byte z = 0; z < bRot.cols; ++z) {
+            Rotation rot = new Rotation(this.structure[y]);
+            rot.rotateRight(3 - structure.facing().get2DDataValue());
+            for (byte x = 0; x < rot.rows; ++x) {
+                for (byte z = 0; z < rot.cols; ++z) {
                     BlockPos p3 = p2.offset(x, -y + (ySize - 1), z);
-                    if (destroyParticle != null) level.addParticle(destroyParticle, p3.getX() + 0.5f, p3.getY() + 0.5f, p3.getZ() + 0.5f, 1f, 1f, 1f);
+                    if (destroyParticle != null){
+                        RandomSource rand = RandomSource.create();
+                        for(int i = 0; i < 10; i++) {
+                            level.addParticle(destroyParticle, p3.getX() + rand.nextFloat(), p3.getY() + rand.nextFloat(), p3.getZ() + + rand.nextFloat(), 0, 0, 0);
+                        }
+                    }
                     else level.destroyBlock(p3, false);
-                    if (bRot.matrix[x][z] instanceof Result result) {
+                    if (rot.matrix[x][z] instanceof Result result) {
                         applyResult(level, p3, result.result(), structure.facing());
                     }
                 }
@@ -117,12 +120,12 @@ public class BaseMultiBlock implements Blueprint {
 
     @Override
     public boolean canActivate(Player player, Level level, ItemStack stack) {
-        boolean flag = stack.getItem() instanceof BlueprintActivator && stack.is(activator);
+        boolean flag = stack.getItem() instanceof Blueprinter && stack.is(activator);
         return condition != null ? condition.test(player, level, stack) && flag : flag;
     }
 
     @Override
-    public Blueprint condition(TriPredicate<Player, Level, ItemStack> condition){
+    public final Blueprint condition(TriPredicate<Player, Level, ItemStack> condition){
         this.condition = condition;
         return this;
     }

@@ -2,11 +2,7 @@ package com.mw.nullcore.utils;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-
 import java.text.DecimalFormat;
 import java.util.*;
 
