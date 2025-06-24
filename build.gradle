@@ -48,7 +48,7 @@ modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "${mod_id}"
     versionNumber = "${mod_version}"
-    versionType = "beta"
+    versionType = "release"
     uploadFile = jar
     gameVersions = ["1.21.4"]
     loaders = ["neoforge"]
