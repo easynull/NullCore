@@ -6,8 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -17,7 +15,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class RenderUtils {
@@ -162,12 +159,12 @@ public final class RenderUtils {
         float u0, v0, u1, v1;
         float[] color;
 
-        public static RenderingBuilder start() {
+        public static RenderingBuilder builder() {
             return new RenderingBuilder();
         }
 
-        public RenderingBuilder renderType(Function<ResourceLocation, RenderType> type, ResourceLocation loc) {
-            this.loc = loc;
+        public RenderingBuilder renderType(Function<ResourceLocation, RenderType> type, String modid, String path) {
+            this.loc = ResourceLocation.fromNamespaceAndPath(modid, path);
             this.vertex = mBuffer.getBuffer(type.apply(loc));
             return this;
         }

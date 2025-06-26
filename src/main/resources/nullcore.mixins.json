@@ -3,9 +3,13 @@
   "minVersion": "0.8.4",
   "package": "com.mw.nullcore.core.mixins",
   "compatibilityLevel": "JAVA_18",
+  "mixins": [
+    "BlockBehaviourMixin",
+    "BlockExtensionMixin",
+    "BlockMixin"
+  ],
   "client": [
-    "GuiGraphicsMixin",
-    "TitleScreenMixin"
+    "GuiGraphicsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -9,29 +9,32 @@ import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class InventoryBlockEntity extends NullBlockEntity {
+public class InventoryBlockEntity extends BlockEntity {
     public final SimpleContainer inventory;
+    public final int maxInSlot;
 
-    public InventoryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int slots) {
+    public InventoryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int slots, int maxInSlot) {
         super(type, pos, state);
         inventory = new SimpleContainer(slots);
+        this.maxInSlot = maxInSlot;
         inventory.addListener(c -> setChanged());
     }
     public InventoryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        this(type, pos, state, 1);
+        this(type, pos, state, 1, 1);
     }
 
-    private static void copyToInv(NonNullList<ItemStack> src, Container dest) {
+    private void copyToInv(NonNullList<ItemStack> src, Container dest) {
         Preconditions.checkArgument(src.size() == dest.getContainerSize());
         for (int i = 0; i < src.size(); i++) {
             dest.setItem(i, src.get(i));
         }
     }
 
-    private static NonNullList<ItemStack> copyFromInv(Container inv) {
+    private NonNullList<ItemStack> copyFromInv(Container inv) {
         NonNullList<ItemStack> ret = NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ret.set(i, inv.getItem(i));

@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GuiGraphics.class)
 public final class GuiGraphicsMixin {
     @Inject(at = @At(value = "TAIL"), method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V")
-    private void renderItem(LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset, CallbackInfo ci) {
+    private void nc$renderItem(LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset, CallbackInfo ci) {
         if (NullConfig.particleInGui && stack.getItem() instanceof GuiRender item) {
             GuiGraphics gg = (GuiGraphics) ((Object) this);
-            item.inGuiRender(gg, entity, level, stack, pX, pY, seed, guiOffset);
+            item.renderItemGUI(gg, entity, level, stack, pX, pY, seed, guiOffset);
         }
     }
 
     @Inject(at = @At(value = "HEAD"), method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V")
-    private void renderParticleItem(LivingEntity entity, Level level, ItemStack stack, int x, int y, int p_283260_, int p_281995_, CallbackInfo ci) {
+    private void nc$renderParticleItem(LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset, CallbackInfo ci) {
     }
 }

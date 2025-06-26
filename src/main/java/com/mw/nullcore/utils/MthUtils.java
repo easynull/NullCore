@@ -23,7 +23,7 @@ public final class MthUtils {
     }
 
     /**
-     * Smoothly calculates the intermediate point between start and end based on the delta parameter (0.0-1.0).
+     * Smoothly calculates the intermediate point between builder and end based on the delta parameter (0.0-1.0).
      */
     public static Vector3f lerpVec3f(float delta, BlockPos start, BlockPos end) {
         return new Vector3f(Mth.lerp(delta, start.getX(), end.getX()), Mth.lerp(delta, start.getY(), end.getY()), Mth.lerp(delta, start.getZ(), end.getZ()));
