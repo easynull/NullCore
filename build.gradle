@@ -17,10 +17,6 @@ group = mod_group_id
 repositories {
     mavenLocal()
     mavenCentral()
-    maven {
-        name = "Github"
-        url = "https://easynull.github.io/nullcore/"  // Замените на ваш URL
-    }
 }
 base {
     archivesName = mod_name
@@ -81,45 +77,13 @@ tasks.withType(ProcessResources).configureEach {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            groupId = group
-            artifactId = project.name
-            version = version
-
+        register('mavenJava', MavenPublication) {
             from components.java
-
-            pom {
-                name = project.name
-                description = 'API mod by MW Team'
-                url = 'https://github.com/easynull/NullCore'
-
-                licenses {
-                    license {
-                        name = mod_license
-                        url = 'https://www.gnu.org/licenses/gpl-2.0.html'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'easynull'
-                        name = 'easynull'
-                        email = 'null@example.com'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:git://github.com/easynull/NullCore.git'
-                    developerConnection = 'scm:git:ssh://github.com/easynull/NullCore.git'
-                    url = 'https://github.com/easynull/NullCore'
-                }
-            }
         }
     }
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("$buildDir/maven-publish")
+            url "file://${project.projectDir}/repo"
         }
     }
 }

@@ -65,7 +65,7 @@ jobs:
         run: ./gradlew publishToMavenLocal
 
       - name: Publish to GitHub Packages
-        run: ./gradlew publishToMavenCentral
+        run: ./gradlew publishMavenJavaPublicationToGitHubPackagesRepository
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
