@@ -6,6 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -19,6 +21,7 @@ import java.util.function.Function;
 
 public final class RenderUtils {
     private static final MultiBufferSource mBuffer = mc().renderBuffers().bufferSource();
+    public static final float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
     public static void drawTexture(ResourceLocation texture, GuiGraphics gg, int pX, int pY, int uOffset, int vOffset, int pixelWidth, int pixelHeight, int texWidth, int texHeight) {
         gg.blit(RenderType::guiTextured, texture, pX, pY, uOffset, vOffset, pixelWidth, pixelHeight, texWidth, texHeight);
@@ -99,6 +102,14 @@ public final class RenderUtils {
 
     public static void drawText(Object text, GuiGraphics gg, int pX, int pY, int color) {
         drawText(text, gg, pX, pY, color, false);
+    }
+
+    public static TextureAtlasSprite getSprite(ResourceLocation texture){
+        return mc().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
+    }
+
+    public static TextureAtlasSprite getSprite(String modId, String path) {
+        return getSprite(ResourceLocation.fromNamespaceAndPath(modId, path));
     }
 
     @OnlyIn(Dist.CLIENT)

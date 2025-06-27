@@ -1,7 +1,6 @@
 package com.mw.nullcore.core;
 
 import com.mw.nullcore.core.entities.AdvancedItemEntity;
-import com.mw.nullcore.core.holders.NullRegisters;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.neoforge.registries.DeferredHolder;

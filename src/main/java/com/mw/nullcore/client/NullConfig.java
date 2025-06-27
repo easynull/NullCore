@@ -11,19 +11,18 @@ import static com.mw.nullcore.NullCore.ID;
 public class NullConfig {
     private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
     public static final ModConfigSpec SPEC;
-    private static final ModConfigSpec.BooleanValue buildGuiParticle;
+    private static final ModConfigSpec.BooleanValue vfxConfig;
 
     static {
-        buildGuiParticle = builder.comment("Disables/enables rendering of particles of some items in the inventory").define("renderParticleGui", true);
-
+        vfxConfig = builder.comment("Disables/enables rendering of particles of some items in the inventory").define("VFXGui", true);
         SPEC = builder.build();
     }
 
-    public static boolean particleInGui;
+    public static boolean VFXGui;
 
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
-        particleInGui = buildGuiParticle.get();
+        VFXGui = vfxConfig.get();
     }
 }

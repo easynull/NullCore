@@ -24,7 +24,8 @@
 
 # **Licensing**
 
->#### Code unless otherwise stated default to our [click to license](license.txt)
+>#### Code unless otherwise stated default to our [click to license](LICENSE)
+>![GitHub License](https://img.shields.io/github/license/easynull/NullCore?style=for-the-badge&labelColor=red&color=white)
 
 # **For developers**
 

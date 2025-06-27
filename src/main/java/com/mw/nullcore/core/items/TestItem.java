@@ -1,27 +1,28 @@
 package com.mw.nullcore.core.items;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mw.nullcore.client.render.vfx.VFXBuilder;
 import com.mw.nullcore.core.entities.AdvancedItemEntity;
+import com.mw.nullcore.utils.ClientUtils;
 import com.mw.nullcore.utils.ColorUtils;
-import com.mw.nullcore.utils.RenderUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
+import java.util.Collection;
 import java.util.List;
 
-public final class TestItem extends Item implements GuiRender, GuiParticleRender {
+public final class TestItem extends Item implements GuiRenderer, CreativeTabItem {
     public TestItem(Properties properties) {
         super(properties);
     }
@@ -46,17 +47,18 @@ public final class TestItem extends Item implements GuiRender, GuiParticleRender
     }
 
     @Override
-    public void renderItemGUI(GuiGraphics gg, LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset) {
+    public void renderGuiVFX(GuiGraphics gg, Level level, ItemStack stack, int pX, int pY, float pTick) {
         PoseStack ps = gg.pose();
         ps.pushPose();
-        ps.translate(pX + 8, pY + 9, 100);
-        RenderUtils.RenderingBuilder.builder().renderType(RenderType::guiTextured, "nullcore", "textures/particle/light.png")
-                .color(ColorUtils.getRainbowColor()).poseStack(ps).renderCenteredQuad(12f);
+        float rotationTime = (ClientUtils.clientTick + pTick) * 0.02f + 0.5f;
+        float pulse = (Mth.sin((ClientUtils.clientTick + pTick) * 0.4f) * 0.5f + 0.5f);
+        float scale = 1f + (1f - 1.3f) * pulse;
+        VFXBuilder.create(ps).move(pX + 8f, pY + 8f, 100f).spin(rotationTime).scale(scale).renderType(RenderType::guiTextured, "nullcore", "textures/particle/star.png").color(0xFFDD0000).transparency(1f - scale + 0.5f).build(17f);
         ps.popPose();
     }
 
     @Override
-    public void renderParticleGui(LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset) {
-
+    public void addCreativeTab(ResourceKey<CreativeModeTab> tab, Collection<ItemStack> output) {
+        if(tab == CreativeModeTabs.BUILDING_BLOCKS) output.add(this.getDefaultInstance());
     }
 }

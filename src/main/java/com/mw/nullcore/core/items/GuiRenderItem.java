@@ -1,49 +1,41 @@
 package com.mw.nullcore.core.items;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mw.nullcore.utils.RenderUtils;
+import com.mw.nullcore.client.render.vfx.VFXBuilder;
+import com.mw.nullcore.utils.ClientUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class GuiRenderItem extends Item implements GuiRender, GuiParticleRender {
+import java.util.function.Consumer;
+
+public class GuiRenderItem extends Item implements GuiRenderer {
+    private final ResourceLocation texture;
     final int color;
-    final ParticleOptions particle;
-    final String modid, path;
+    final float size;
+    final boolean late;
 
-    public GuiRenderItem(Item.Properties properties, ParticleOptions particle, String modid, String path, int color) {
+    public GuiRenderItem(Item.Properties properties, ResourceLocation texture, int color, float size, boolean late) {
         super(properties);
-        this.particle = particle;
-        this.modid = modid;
-        this.path = path;
+        this.texture = texture;
         this.color = color;
+        this.size = size;
+        this.late = late;
     }
 
-    public GuiRenderItem(Item.Properties properties, String modid, String path, int color) {
-        this(properties, null, path, modid, color);
-    }
-
-    public GuiRenderItem(Item.Properties properties, ParticleOptions particle, int color) {
-        this(properties, particle, null, null, color);
+    public GuiRenderItem(Item.Properties properties, ResourceLocation texture, int color, float size) {
+        this(properties, texture, color, size, false);
     }
 
     @Override
-    public void renderItemGUI(GuiGraphics gg, LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset) {
-        if (modid == null && path == null) return;
+    public void renderGuiVFX(GuiGraphics gg, Level level, ItemStack stack, int pX, int pY, float pTick) {
         PoseStack ps = gg.pose();
         ps.pushPose();
-        ps.translate(pX + 8, pY + 7.5f, 100f);
-        RenderUtils.RenderingBuilder.builder().renderType(RenderType::guiTextured, modid, path)
-                .color(color).poseStack(ps).renderCenteredQuad(12f);
+        VFXBuilder.create(ps).move(pX + 8.5f, pY + 8.5f, late ? 200f : 100f).renderType(RenderType::guiTextured, texture.getNamespace(), texture.getPath()).color(color).build(size);
         ps.popPose();
-    }
-
-    @Override
-    public void renderParticleGui(LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset) {
-        if (particle == null) return;
     }
 }

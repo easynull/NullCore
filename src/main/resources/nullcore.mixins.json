@@ -9,6 +9,7 @@
     "BlockMixin"
   ],
   "client": [
+    "CreativeTabMixin",
     "GuiGraphicsMixin"
   ],
   "injectors": {

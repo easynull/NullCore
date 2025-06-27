@@ -5,16 +5,15 @@ import com.mw.nullcore.core.NullComponents;
 import com.mw.nullcore.core.NullEntities;
 import com.mw.nullcore.core.blocks.TestBlock;
 import com.mw.nullcore.core.blocks.type.TestBE;
+import com.mw.nullcore.core.holders.RsBlocks;
+import com.mw.nullcore.core.holders.RsItems;
+import com.mw.nullcore.core.items.GuiRenderItem;
 import com.mw.nullcore.core.items.TestItem;
-import com.mw.nullcore.core.holders.NullRegisters;
 import com.mw.nullcore.utils.ClientUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -47,8 +46,8 @@ public final class NullCore {
         bus.addListener(ClientUtils::onTicker);
     }
 
-    static final NullRegisters.AdItems items = new NullRegisters.AdItems(ID);
-    static final NullRegisters.AdBlocks blocks = new NullRegisters.AdBlocks(ID, items);
+    static final RsItems items = RsItems.create(ID);
+    static final RsBlocks blocks = RsBlocks.create(ID, items);
     static final DeferredRegister<BlockEntityType<?>> bes = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, ID);
 
     DeferredItem<TestItem> n = items.registerItem("null", TestItem::new);
