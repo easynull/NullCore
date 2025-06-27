@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   release:
@@ -59,48 +61,19 @@ jobs:
 
       - name: Build the mod
         run: ./gradlew build
+      - name: Publish to Maven Local
+        run: ./gradlew publishToMavenLocal
 
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ env.VERSION }}
-          name: Release ${{ env.VERSION }}
-          body: |
-            ${{ env.COMMIT_MESSAGE }}
-          draft: false
-          prerelease: false
-          files: build/libs/*-${{ env.MOD_VERSION }}.jar
+      - name: Publish to GitHub Packages
+        run: ./gradlew publishToMavenCentral
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  modrinth:
-    needs: release
-    environment: Release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
         with:
-          distribution: 'temurin'
-          java-version: 21
+          source: .gradle/maven-publish
 
-      - name: Restore Gradle Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('/*.gradle*','/gradle-wrapper.properties') }}
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
-      - name: Publish to Modrinth
-        run: ./gradlew modrinth
-        env:
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2

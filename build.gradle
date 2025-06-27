@@ -16,12 +16,16 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    mavenCentral()
+    maven {
+        name = "Github"
+        url = "https://easynull.github.io/nullcore/"  // Замените на ваш URL
+    }
 }
 base {
     archivesName = mod_name
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 runs {
     configureEach {
         systemProperty 'forge.logging.markers', 'REGISTRIES'
@@ -63,7 +67,7 @@ tasks.withType(ProcessResources).configureEach {
             neo_version_range      : neo_version_range,
             loader_version_range   : loader_version_range,
             mod_id                 : mod_id,
-            mod_name               : mod_name,
+            mod_name               : project.name,
             mod_license            : mod_license,
             mod_version            : mod_version,
             mod_authors            : mod_authors,
@@ -77,17 +81,50 @@ tasks.withType(ProcessResources).configureEach {
 
 publishing {
     publications {
-        register('mavenJava', MavenPublication) {
+        mavenJava(MavenPublication) {
+            groupId = group
+            artifactId = project.name
+            version = version
+
             from components.java
+
+            pom {
+                name = project.name
+                description = 'API mod by MW Team'
+                url = 'https://github.com/easynull/NullCore'
+
+                licenses {
+                    license {
+                        name = mod_license
+                        url = 'https://www.gnu.org/licenses/gpl-2.0.html'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'easynull'
+                        name = 'easynull'
+                        email = 'null@example.com'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:git://github.com/easynull/NullCore.git'
+                    developerConnection = 'scm:git:ssh://github.com/easynull/NullCore.git'
+                    url = 'https://github.com/easynull/NullCore'
+                }
+            }
         }
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/repo"
+            name = "GitHubPackages"
+            url = uri("$buildDir/maven-publish")
         }
     }
 }
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
