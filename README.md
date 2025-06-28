@@ -46,7 +46,7 @@
 >   //from Modrinth:
 >   implementation "maven.modrinth:nullcore:${nullcore_version}"
 >   //from CurseForge:
->   implementation "curse.maven:nullcore:${nullcore_version}"
+>   implementation "curse.maven:nullcore-1286206:${nullcore_file_id}"
 >}
 >```
 
