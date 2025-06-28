@@ -1,5 +1,4 @@
-# - Added interface for rendering item in gui
-# - Added holders for easy registers
-# - Added functional work with Creative Mode Tab
-# - Added VFX Builder
-# - Fixed Advanced item entity
+# - Added Particle Utils
+# - Update VFX Builder
+# - Update Render systems
+# - Full fixed Advanced item entity

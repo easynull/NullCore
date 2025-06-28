@@ -5,9 +5,11 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -104,127 +106,8 @@ public final class RenderUtils {
         drawText(text, gg, pX, pY, color, false);
     }
 
-    public static TextureAtlasSprite getSprite(ResourceLocation texture){
-        return mc().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
-    }
-
-    public static TextureAtlasSprite getSprite(String modId, String path) {
-        return getSprite(ResourceLocation.fromNamespaceAndPath(modId, path));
-    }
-
     @OnlyIn(Dist.CLIENT)
     public static Minecraft mc() {
         return Minecraft.getInstance();
-    }
-
-    public record Transform(PoseStack ps) {
-        public void start() {
-            ps.pushPose();
-        }
-
-        public void stop() {
-            ps.popPose();
-        }
-
-        public void autoPose(Runnable action) {
-            start();
-            action.run();
-            stop();
-        }
-
-        public void rotate(float pX, float pY, float pZ, Quaternionf angel) {
-            move(pX, pY, pZ);
-            ps.mulPose(angel);
-            move(-pX, -pY, -pZ);
-        }
-
-        public void rotate(float pX, float pY, Quaternionf angel) {
-            rotate(pX, pY, 0, angel);
-        }
-
-        public void scale(float pX, float pY, float pZ, float sX, float sY, float sZ) {
-            move(pX, pY, pZ);
-            ps.scale(sX, sY, sZ);
-            move(-pX, -pY, -pZ);
-        }
-
-        public void scale(float pX, float pY, float sX, float sY) {
-            scale(pX, pY, 0, sX, sY, 0);
-        }
-
-        public void move(float pX, float pY, float pZ) {
-            ps.translate(pX, pY, pZ);
-        }
-
-        public void move(float pX, float pY) {
-            move(pX, pY, 0);
-        }
-    }
-
-    public static final class RenderingBuilder {
-        MultiBufferSource mBuffer = RenderUtils.mc().renderBuffers().bufferSource();
-        VertexConsumer vertex;
-        PoseStack ps;
-        PoseStack.Pose pose;
-        ResourceLocation loc;
-        float u0, v0, u1, v1;
-        float[] color;
-
-        public static RenderingBuilder builder() {
-            return new RenderingBuilder();
-        }
-
-        public RenderingBuilder renderType(Function<ResourceLocation, RenderType> type, String modid, String path) {
-            this.loc = ResourceLocation.fromNamespaceAndPath(modid, path);
-            this.vertex = mBuffer.getBuffer(type.apply(loc));
-            return this;
-        }
-
-        public RenderingBuilder poseStack(PoseStack ps) {
-            this.ps = ps;
-            pose = ps.last();
-            return this;
-        }
-
-        public RenderingBuilder color(int color) {
-            this.color = ColorUtils.unpackRGBA(color);
-            return this;
-        }
-
-        public RenderingBuilder renderCenteredQuad(float size){
-            return renderCenteredQuad(size, size);
-        }
-
-        public RenderingBuilder renderCenteredQuad(float width, float height){
-            Vector3f[] positions = new Vector3f[]{new Vector3f(-1, 1, 0), new Vector3f(1, 1, 0), new Vector3f(1, -1, 0), new Vector3f(-1, -1, 0)};
-            return renderQuad(positions, width, height);
-        }
-
-        public RenderingBuilder renderQuad(Vector3f[] positions, float size){
-            return renderQuad(positions, size, size);
-        }
-
-        public RenderingBuilder renderQuad(Vector3f[] positions, float width, float height){
-            this.u0 = width;
-            this.v0 = height;
-            this.u1 = width - 1;
-            this.v1 = height - 1;
-            for(Vector3f position : positions){
-                position.mul(width, height, width);
-            }
-            return renderQuad(positions);
-        }
-
-        private RenderingBuilder renderQuad(Vector3f[] positions){
-            addVertex(positions[0], u0, v1);
-            addVertex(positions[1], u1, v1);
-            addVertex(positions[2], u1, v0);
-            addVertex(positions[3], u0, v0);
-            return this;
-        }
-
-        private void addVertex(Vector3f pos, float u, float v) {
-            vertex.addVertex(pose, pos.x(), pos.y(), pos.z()).setColor(color[3], color[1], color[2], 1f).setUv(u, v);
-        }
     }
 }

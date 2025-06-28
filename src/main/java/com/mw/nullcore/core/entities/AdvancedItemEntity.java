@@ -3,6 +3,7 @@ package com.mw.nullcore.core.entities;
 import com.mojang.datafixers.util.Pair;
 import com.mw.nullcore.core.NullEntities;
 import com.mw.nullcore.utils.ClientUtils;
+import com.mw.nullcore.utils.ParticleUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,7 +16,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.ParticleUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.WolfVariant;
@@ -51,7 +51,7 @@ public final class AdvancedItemEntity extends ItemEntity {
         super.tick();
         if (level().isClientSide) {
             if (entityData.get(canParticle) && tickCount % 15 == 0) {
-                ClientUtils.forParticleSpawn(level(), getParticle(), (float) getX(), (float) getY() + 0.3f, (float) getZ(), entityData.get(countParticle));
+                ParticleUtils.forParticleSpawn(level(), getParticle(), (float) getX(), (float) getY() + 0.3f, (float) getZ(), entityData.get(countParticle));
             }
         }
     }
@@ -91,15 +91,16 @@ public final class AdvancedItemEntity extends ItemEntity {
     public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("canRays", getRays().getFirst());
-        compound.putBoolean("canParticle", entityData.get(canParticle));
         compound.putInt("color", getRays().getSecond());
+        compound.putBoolean("canParticle", entityData.get(canParticle));
         compound.putInt("countParticle", entityData.get(countParticle));
+        ParticleUtils.writeParticle(compound, getParticle());
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
         setRays(compound.getBoolean("canRays"), compound.getInt("color"));
-        setParticle(compound.getBoolean("canParticle"), getParticle(), compound.getInt("countParticle"));
+        setParticle(compound.getBoolean("canParticle"), ParticleUtils.readParticle(compound), compound.getInt("countParticle"));
     }
 }
