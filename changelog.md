@@ -1,4 +1,4 @@
-# - Added Particle Utils
-# - Update VFX Builder
-# - Update Render systems
-# - Full fixed Advanced item entity
+# - Added Biome settings
+# - Added setting biome time (json)
+# - Added comfortable holder Sounds
+# - Update World Utils

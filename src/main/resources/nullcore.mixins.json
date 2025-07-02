@@ -6,7 +6,8 @@
   "mixins": [
     "BlockBehaviourMixin",
     "BlockExtensionMixin",
-    "BlockMixin"
+    "BlockMixin",
+    "LevelMixin"
   ],
   "client": [
     "CreativeTabMixin",

@@ -16,7 +16,6 @@ import java.util.function.Supplier;
 public final class RsBlocks extends DeferredRegister<Block> {
     final String id;
     final RsItems register;
-
     private RsBlocks(String namespace, RsItems register) {
         super(Registries.BLOCK, namespace);
         this.id = namespace;
