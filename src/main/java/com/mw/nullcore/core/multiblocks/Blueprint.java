@@ -3,6 +3,7 @@ package com.mw.nullcore.core.multiblocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -12,21 +13,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.TriPredicate;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 
-@SuppressWarnings("unchecked")
 public interface Blueprint {
-    Map<String, Blueprint> registry = new HashMap();
-
-    String getId();
 
     @Nullable
     Direction validateStructure(Level level, BlockPos centerPos);
 
-    void onBuilt(Level level, BlockPos startPos, Structure structure, ParticleOptions destroyParticle, Object... other);
+    void onBuilt(Level level, BlockPos startPos, Structure structure, Object... other);
 
     Structure getStructure(Level level, BlockPos centerPos);
 
@@ -36,14 +32,8 @@ public interface Blueprint {
 
     Blueprint condition(TriPredicate<Player, Level, ItemStack> condition);
 
-    static void register(Blueprint blueprint) {
-        if (blueprint != null) {
-            registry.put(blueprint.getId(), blueprint);
-        }
-    }
-
-    static <T extends Blueprint> T get(String id){
-        return (T) registry.get(id);
+    static ResourceLocation get(DeferredHolder<Blueprint, ?> key){
+        return key.getId();
     }
 
     default void applyResult(Level level, BlockPos pos, Object result, Direction facing) {
@@ -62,7 +52,16 @@ public interface Blueprint {
         ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(item));
         entity.setNoGravity(true);
         entity.setDeltaMovement(0, 0, 0);
+        if (setItemEntity() != null) entity = setItemEntity();
         level.addFreshEntity(entity);
+    }
+
+    default ItemEntity setItemEntity(){
+        return null;
+    }
+
+    default Item getActivator(){
+        return null;
     }
 
     record Structure(int xOffset, int yOffset, int zOffset, Direction facing) {}

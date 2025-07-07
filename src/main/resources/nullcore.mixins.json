@@ -4,10 +4,13 @@
   "package": "com.mw.nullcore.core.mixins",
   "compatibilityLevel": "JAVA_18",
   "mixins": [
+    "BiomeMixin",
     "BlockBehaviourMixin",
     "BlockExtensionMixin",
     "BlockMixin",
-    "LevelMixin"
+    "ItemMixin",
+    "LevelMixin",
+    "MobMixin"
   ],
   "client": [
     "CreativeTabMixin",

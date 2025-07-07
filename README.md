@@ -21,11 +21,11 @@
 >#### **- Simplified ```Rendering system``` ~~(currently beta)~~**
 >#### **- Simplified work with ```Blocks``` in different directions**
 >#### **- Manipulations with ```Item``` rendering in ```Gui```**
-
+>#### **- Add your `track` to dungeons or dimensions via `json`**
+>#### **- Adjust ```biome rules``` via ```json```**
 # **Licensing**
 
 >#### Code unless otherwise stated default to our [click to license](LICENSE)
->![GitHub License](https://img.shields.io/github/license/easynull/NullCore?style=for-the-badge&labelColor=red&color=white)
 
 # **For developers**
 
@@ -49,6 +49,8 @@
 >   implementation "curse.maven:nullcore-1286206:${nullcore_file_id}"
 >}
 >```
+
+>You can find a tutorial on other things at this [link](https://github.com/easynull/NullCore/blob/1.21.4-neoforge/tutorial.md)
 
 # **Author contacts**
 

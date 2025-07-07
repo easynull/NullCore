@@ -23,7 +23,7 @@ import java.util.function.Function;
 
 public final class RenderUtils {
     private static final MultiBufferSource mBuffer = mc().renderBuffers().bufferSource();
-    public static final float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+    public static final float partialTick = mc().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
     public static void drawTexture(ResourceLocation texture, GuiGraphics gg, int pX, int pY, int uOffset, int vOffset, int pixelWidth, int pixelHeight, int texWidth, int texHeight) {
         gg.blit(RenderType::guiTextured, texture, pX, pY, uOffset, vOffset, pixelWidth, pixelHeight, texWidth, texHeight);
@@ -88,13 +88,9 @@ public final class RenderUtils {
     }
 
     public static void autoColoring(int rgba, Runnable action) {
-        float[] prevColor = RenderSystem.getShaderColor();
         setColor(rgba);
-        try {
-            action.run();
-        } finally {
-            RenderSystem.setShaderColor(prevColor[0], prevColor[1], prevColor[2], prevColor[3]);
-        }
+        action.run();
+        RenderSystem.clearColor(0f, 0f, 0f, 0f);
     }
 
     public static void drawText(Object text, GuiGraphics gg, int pX, int pY, int color, boolean shadow) {

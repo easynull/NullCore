@@ -1,10 +1,9 @@
 package com.mw.nullcore.core.multiblocks;
 
-import com.mw.nullcore.core.items.Blueprinter;
+import com.mw.nullcore.core.entities.AdvancedItemEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -16,27 +15,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.TriPredicate;
 import org.jetbrains.annotations.Nullable;
 
-public class BaseMultiblock implements Blueprint {
+import java.util.function.Consumer;
+
+public class BaseMultiBlock implements Blueprint {
     final Object[][][] structure;
-    final String id;
     final int xSize;
     final int ySize;
     final int zSize;
     final Item activator;
     TriPredicate<Player, Level, ItemStack> condition = null;
 
-    public BaseMultiblock(String id, Object[][][] structure, Item activator) {
-        this.id = id;
+    public BaseMultiBlock(Object[][][] structure, Item activator) {
         this.structure = structure;
         this.ySize = structure.length;
         this.xSize = structure[0].length;
         this.zSize = structure[0][0].length;
         this.activator = activator;
-    }
-
-    @Override
-    public String getId() {
-        return id;
     }
 
     @Override
@@ -94,7 +88,7 @@ public class BaseMultiblock implements Blueprint {
     }
 
     @Override
-    public void onBuilt(Level level, BlockPos startPos, Structure structure, ParticleOptions destroyParticle, Object... other) {
+    public void onBuilt(Level level, BlockPos startPos, Structure structure, Object... other) {
         if (structure == null) return;
         BlockPos p2 = startPos.offset(structure.xOffset(), structure.yOffset(), structure.zOffset());
         for (byte y = 0; y < ySize; ++y) {
@@ -103,13 +97,7 @@ public class BaseMultiblock implements Blueprint {
             for (byte x = 0; x < rot.rows; ++x) {
                 for (byte z = 0; z < rot.cols; ++z) {
                     BlockPos p3 = p2.offset(x, -y + (ySize - 1), z);
-                    if (destroyParticle != null){
-                        RandomSource rand = RandomSource.create();
-                        for(int i = 0; i < 10; i++) {
-                            level.addParticle(destroyParticle, p3.getX() + rand.nextFloat(), p3.getY() + rand.nextFloat(), p3.getZ() + + rand.nextFloat(), 0, 0, 0);
-                        }
-                    }
-                    else level.destroyBlock(p3, false);
+                    level.destroyBlock(p3, false);
                     if (rot.matrix[x][z] instanceof Result result) {
                         applyResult(level, p3, result.result(), structure.facing());
                     }
@@ -120,13 +108,18 @@ public class BaseMultiblock implements Blueprint {
 
     @Override
     public boolean canActivate(Player player, Level level, ItemStack stack) {
-        boolean flag = stack.getItem() instanceof Blueprinter && stack.is(activator);
+        boolean flag = stack.is(activator);
         return condition != null ? condition.test(player, level, stack) && flag : flag;
     }
 
     @Override
-    public final Blueprint condition(TriPredicate<Player, Level, ItemStack> condition){
+    public final BaseMultiBlock condition(TriPredicate<Player, Level, ItemStack> condition){
         this.condition = condition;
         return this;
+    }
+
+    @Override
+    public Item getActivator() {
+        return activator;
     }
 }
