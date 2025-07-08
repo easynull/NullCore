@@ -1,11 +1,13 @@
 package com.mw.nullcore.client.audio;
 
 import com.mw.nullcore.NullCore;
+import com.mw.nullcore.core.mixins.SoundManagerAccessor;
 import com.mw.nullcore.data.TracksManager;
 import com.mw.nullcore.utils.WorldUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,118 +16,127 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 public final class TrackerTicker {
     final Minecraft mc = Minecraft.getInstance();
-    public MusicAmbient music;
-    public int timeNextMusic = 300;
+    private TrackAmbient track;
+    private Track selectedTrack;
+    private int timeNextTrack = 300;
+    private ResourceLocation currentStructure;
 
     public TrackerTicker() {}
 
     public void tick(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)) return;
-        ResourceLocation currentWorld = level.dimension().location();
-        boolean inStructure = false;
-        Track selectedTrack = null;
+        var newStructure = getCurrentStructure(level, player.blockPosition());
 
-        for (Map.Entry<ResourceLocation, List<Track>> entry : TracksManager.selfTracks.entrySet()) {
-            if (WorldUtils.isPosInStructure(level, player.blockPosition(), entry.getKey())) {
-                inStructure = true;
-                selectedTrack = getTrack(entry.getValue(), level);
-                break;
-            }
+        if (currentStructure != null && newStructure == null) {
+            stop();
         }
-        if (!inStructure) {
-            List<Track> worldTracks = TracksManager.selfTracks.get(currentWorld);
-            if (worldTracks != null && !worldTracks.isEmpty()) {
+        currentStructure = newStructure;
+        if (selectedTrack == null || timeNextTrack == 0) updateTrack(level, newStructure);
+
+        if (canPlay()) {
+            play(selectedTrack, level.random);
+            NullCore.LOGGER.info("Track {} starting play!", track.getLocation());
+        } else if (selectedTrack == null) {
+            stop();
+        }
+    }
+
+    private void updateTrack(ServerLevel level, ResourceLocation id) {
+        selectedTrack = null;
+        HashSet<Track> structureTracks = TracksManager.selfTracks.get(id);
+        if(structureTracks != null) {
+            selectedTrack = getTrack(structureTracks, level);
+        } else {
+            HashSet<Track> worldTracks = TracksManager.selfTracks.get(level.dimension().location());
+            if (worldTracks != null) {
                 selectedTrack = getTrack(worldTracks, level);
             }
         }
-
-        if (music != null) {
-            if (!music.getLocation().equals(selectedTrack != null ? selectedTrack.sound() : null)) {
-                stopMusic();
-            }
-        }
-
-        if (selectedTrack != null && canPlayTrack(level.random, selectedTrack)) {
-            playMusic(selectedTrack.getSound(), selectedTrack, level.random);
-            NullCore.LOGGER.info("Playing {} track: {}", inStructure ? "structure" : "world", selectedTrack.sound());
-        } else if (selectedTrack == null) {
-            stopMusic();
-        }
     }
 
-    private boolean canPlayTrack(RandomSource rand, Track track) {
-        if (music != null && mc.getSoundManager().isActive(music)) {
+    private ResourceLocation getCurrentStructure(ServerLevel level, BlockPos pos) {
+        for (ResourceLocation structureId : TracksManager.selfTracks.keySet()) {
+            if (WorldUtils.isPosInStructure(level, pos, structureId)) {
+                return structureId;
+            }
+        }
+        return null;
+    }
+
+    private boolean canPlay() {
+        if (selectedTrack == null) return false;
+        if (track != null && mc.getSoundManager().isActive(track)) return false;
+
+        if (timeNextTrack > 0) {
+            timeNextTrack--;
             return false;
         }
-        if (timeNextMusic > 0) {
-            timeNextMusic--;
-            return false;
-        }
-        timeNextMusic = Mth.nextInt(rand, track.minDelay(), track.maxDelay());
         return true;
     }
 
-    private Track getTrack(List<Track> trackList, ServerLevel level){
-        return trackList.size() > 1 ? trackList.get(level.random.nextInt(trackList.size())) : trackList.get(0);
+    private Track getTrack(HashSet<Track> trackList, ServerLevel level){
+        List<Track> tl = trackList.stream().toList();
+        return trackList.size() > 1 ? tl.get(level.random.nextInt(trackList.size())) : tl.get(0);
     }
 
-    public boolean playingMusic() {
-        return music != null;
+    public void play(Track track, RandomSource rand) {
+        this.track = new TrackAmbient(track.getSound(), SoundSource.MUSIC);
+        this.track.setVolume(1.0f);
+        this.track.setTick(45);
+        ((FadeSoundEngine)((SoundManagerAccessor)mc.getSoundManager()).getSoundEngine()).nc$fade(true);
+        mc.getSoundManager().play(this.track);
+        timeNextTrack = Mth.nextInt(rand, track.minDelay(), track.maxDelay());
     }
 
-    public boolean isMusic(SoundInstance sound) {
-        return music == sound;
-    }
-
-    public void playMusic(SoundEvent sound, Track track, RandomSource rand) {
-        music = new MusicAmbient(sound, SoundSource.MUSIC);
-        music.setVolume(1.0f);
-        music.setTicks((short) 40);
-        mc.getSoundManager().play(music);
-        timeNextMusic = Math.min(Mth.nextInt(rand, track.minDelay(), track.maxDelay()), this.timeNextMusic);
-    }
-
-    public void stopMusic() {
-        if (music != null) {
-            music.shouldNotFade = false;
-            music = null;
+    public void stop() {
+        if (track != null) {
+            track.fadeAway = false;
+            track = null;
         }
     }
 
-    public static class MusicAmbient extends AbstractTickableSoundInstance {
-        public int ticksPlayed;
-        public boolean shouldNotFade = true;
+    public boolean playingTrack() {
+        return track != null;
+    }
 
-        protected MusicAmbient(SoundEvent sound, SoundSource source) {
+    public boolean isMusic(SoundInstance sound) {
+        return track == sound;
+    }
+
+    public static class TrackAmbient extends AbstractTickableSoundInstance {
+        private int tick;
+        public boolean fadeAway = true;
+
+        protected TrackAmbient(SoundEvent sound, SoundSource source) {
             super(sound, source, SoundInstance.createUnseededRandom());
         }
 
         @Override
         public void tick() {
-            if (this.ticksPlayed >= 0) {
-                if (this.shouldNotFade) {
-                    ++this.ticksPlayed;
+            if (tick >= 0) {
+                if (fadeAway) {
+                    ++tick;
                 } else {
-                    --this.ticksPlayed;
+                    --tick;
                 }
-                this.setTicks((short) Math.min(this.ticksPlayed, 40));
-                this.volume = Math.max(0.0F, Math.min((float)this.ticksPlayed / 40.0F, 1.0F));
+                setTick(Math.min(tick, 45));
+                setVolume(Math.max(0, Math.min(tick / 45.0f, 1.0f)));
             } else {
-                this.stop();
+                stop();
             }
         }
 
-        public void setVolume(float v){
-            this.volume = v;
+        public void setVolume(float volume){
+            this.volume = volume;
         }
 
-        public void setTicks(short t){
-            this.ticksPlayed = t;
+        public void setTick(int tick){
+            this.tick = tick;
         }
     }
 }

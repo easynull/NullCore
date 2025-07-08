@@ -14,7 +14,9 @@
   ],
   "client": [
     "CreativeTabMixin",
-    "GuiGraphicsMixin"
+    "GuiGraphicsMixin",
+    "SoundEngineMixin",
+    "SoundManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
