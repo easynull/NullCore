@@ -16,6 +16,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -102,6 +103,7 @@ public final class RenderUtils {
         drawText(text, gg, pX, pY, color, false);
     }
 
+    @NotNull
     @OnlyIn(Dist.CLIENT)
     public static Minecraft mc() {
         return Minecraft.getInstance();

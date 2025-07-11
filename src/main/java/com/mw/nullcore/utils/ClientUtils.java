@@ -1,22 +1,18 @@
 package com.mw.nullcore.utils;
 
-import com.mw.nullcore.client.audio.TrackerController;
-import com.mw.nullcore.client.audio.TrackerTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.jetbrains.annotations.NotNull;
 
 public final class ClientUtils {
-    private final static Minecraft mc = Minecraft.getInstance();
+    private final static @NotNull Minecraft mc = Minecraft.getInstance();
     public static int clientTick;
 
     public static void tickClient(ClientTickEvent.Post event) {
@@ -36,7 +32,8 @@ public final class ClientUtils {
     }
 
     public static void setSafeScreen(Screen screen){
-        if(mc.level == null || mc.player == null) return;
+        if(mc.level == null) return;
+        if(mc.player == null) return;
         if(!mc.level.isClientSide()) return;
         mc.setScreen(screen);
     }

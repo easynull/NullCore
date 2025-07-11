@@ -51,9 +51,9 @@ public interface InteractionBlock {
     }
 
     default InteractionResult actionScreen(Level level, BlockPos pos, Player player){
-        BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof ScreenHave s) {
-            setSafeScreen(s.getScreen(level, player, pos));
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof ScreenHave s) {
+            setSafeScreen(s.getScreen(level, player));
             return InteractionResult.SUCCESS;
         } else {
             return InteractionResult.PASS;

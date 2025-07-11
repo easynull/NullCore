@@ -4,7 +4,9 @@ import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.core.NullComponents;
 import com.mw.nullcore.core.NullEntities;
 import com.mw.nullcore.core.holders.KeyRegisters;
+import com.mw.nullcore.core.holders.RsBlocks;
 import com.mw.nullcore.core.holders.RsItems;
+import com.mw.nullcore.core.items.Geta;
 import com.mw.nullcore.utils.ClientUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -12,6 +14,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +27,8 @@ public final class NullCore {
     public NullCore(IEventBus bus, ModContainer mod) {
         bus.addListener(this::client);
         bus.register(new KeyRegisters.Event());
+        t.register(bus);
+        b.register(bus);
         NullComponents.components.register(bus);
         NullEntities.entities.register(bus);
         mod.registerConfig(ModConfig.Type.COMMON, NullConfig.SPEC);
@@ -33,4 +38,7 @@ public final class NullCore {
         var bus = NeoForge.EVENT_BUS;
         bus.addListener(ClientUtils::tickClient);
     }
+    RsItems t = RsItems.create(ID);
+    RsBlocks b = RsBlocks.create(ID, t);
+    DeferredBlock<Geta> g = b.registerBlock("gg", Geta::new);
 }
