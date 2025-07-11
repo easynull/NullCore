@@ -21,8 +21,9 @@
 >#### **- Simplified ```Rendering system``` ~~(currently beta)~~**
 >#### **- Simplified work with ```Blocks``` in different directions**
 >#### **- Manipulations with ```Item``` rendering in ```Gui```**
->#### **- Add your `track` to dungeons or dimensions via `json`**
+>#### **- Add your `track` to dungeons, dimensions or mobs via `json`**
 >#### **- Adjust ```biome rules``` via ```json```**
+>#### **- Opening the `screen` with `blocks` and `items`**
 # **Licensing**
 
 >#### Code unless otherwise stated default to our [click to license](LICENSE)
@@ -55,4 +56,5 @@
 # **Author contacts**
 
 >#### You can contact me via my [GitHub](https://github.com/easynull) page and <span style="color:#3598DB;">[Discord](https://discord.com/users/864935109843)</span>. Otherwise, contact <span style="color:#3598DB;">[MrRomashka](https://discord.com/users/889885345641013348)</span>
+> Please let us know about any problems with use.
 #
