@@ -17,10 +17,12 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 
 public final class TrackerTicker {
-    final Minecraft mc = Minecraft.getInstance();
+    final @NotNull Minecraft mc = Minecraft.getInstance();
     private TrackAmbient track;
     private Track selectedTrack;
     private int timeNextTrack = 300;

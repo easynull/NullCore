@@ -27,7 +27,7 @@ public final class BlockBehaviourMixin {
         }
     }
 
-    @Inject(at = @At(value = "TAIL"), method = "useWithoutItem", cancellable = true)
+    @Inject(at = @At(value = "HEAD"), method = "useWithoutItem", cancellable = true)
     private void nc$useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
         if (state.getBlock() instanceof ScreenHave s && s.canOpen(level, player, state)) {
             setSafeScreen(s.getScreen(level, player));
