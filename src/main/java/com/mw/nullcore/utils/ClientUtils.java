@@ -3,6 +3,7 @@ package com.mw.nullcore.utils;
 import com.mw.nullcore.client.audio.TrackerController;
 import com.mw.nullcore.client.audio.TrackerTicker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
@@ -32,5 +33,11 @@ public final class ClientUtils {
                 ((ServerChunkCache) be.getLevel().getChunkSource()).chunkMap.getPlayers(new ChunkPos(pos), false).forEach(e -> e.connection.send(packet));
             }
         }
+    }
+
+    public static void setSafeScreen(Screen screen){
+        if(mc.level == null || mc.player == null) return;
+        if(!mc.level.isClientSide()) return;
+        mc.setScreen(screen);
     }
 }

@@ -1,4 +1,4 @@
-package com.mw.nullcore.core.blocks;
+package com.mw.nullcore.core.blocks.type;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;

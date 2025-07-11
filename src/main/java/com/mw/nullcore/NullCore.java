@@ -4,6 +4,7 @@ import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.core.NullComponents;
 import com.mw.nullcore.core.NullEntities;
 import com.mw.nullcore.core.holders.KeyRegisters;
+import com.mw.nullcore.core.holders.RsItems;
 import com.mw.nullcore.utils.ClientUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -11,6 +12,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.registries.DeferredItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -1,11 +1,9 @@
 package com.mw.nullcore.core.mixins;
 
-import com.mw.nullcore.core.items.CreativeTabItem;
+import com.mw.nullcore.core.items.CreativeTab;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,7 +23,7 @@ public final class CreativeTabMixin {
         CreativeModeTab tab = (CreativeModeTab)(Object)this;
         ResourceKey<CreativeModeTab> key = BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get();
         for (Item item : BuiltInRegistries.ITEM) {
-            if (item instanceof CreativeTabItem creativeItem) {
+            if (item instanceof CreativeTab creativeItem) {
                 creativeItem.addCreativeTab(key, this.displayItems);
             }
         }

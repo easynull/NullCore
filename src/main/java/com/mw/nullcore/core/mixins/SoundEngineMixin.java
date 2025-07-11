@@ -5,9 +5,7 @@ import com.mw.nullcore.client.audio.FadeSoundEngine;
 import com.mw.nullcore.client.audio.TrackerTicker;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,23 +18,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class SoundEngineMixin implements FadeSoundEngine {
     @Shadow public abstract void setVolume(SoundInstance sound, float volume);
     @Shadow @Final private Multimap<SoundSource, SoundInstance> instanceBySource;
-    @Shadow public abstract void stop(@Nullable ResourceLocation soundName, @Nullable SoundSource category);
-
     @Shadow public abstract void stop(SoundInstance sound);
 
-    @Unique private boolean nc$fading = false;
-    @Unique private int nc$tick = 45;
-    @Unique private SoundInstance nc$soundInstance;
+    @Unique private boolean nc$fading;
+    @Unique private int nc$tick;
+    @Unique private SoundInstance nc$sound;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void nc$onTick(CallbackInfo ci) {
         if (nc$fading) {
-            if(nc$soundInstance != null){
+            if(nc$sound != null){
                 if (nc$tick > 0) {
                     --nc$tick;
-                    setVolume(nc$soundInstance, Math.max(0, nc$tick / 45.0f));
+                    setVolume(nc$sound, Math.max(0, nc$tick / 45.0f));
                 } else {
-                    stop(nc$soundInstance);
+                    stop(nc$sound);
                     nc$fade(false);
                 }
             } else {
@@ -47,11 +43,11 @@ public abstract class SoundEngineMixin implements FadeSoundEngine {
 
     @Unique
     public void nc$fade(boolean fading) {
-        if(instanceBySource.get(SoundSource.MUSIC).stream().findFirst().isPresent()){
-            if(instanceBySource.get(SoundSource.MUSIC).stream().findFirst().get() instanceof SoundInstance sound && !(sound instanceof TrackerTicker.TrackAmbient)){
-                nc$soundInstance = sound;
+        instanceBySource.get(SoundSource.MUSIC).stream().findFirst().ifPresent(s -> {
+            if(!(s instanceof TrackerTicker.TrackAmbient)){
+                nc$sound = s;
             }
-        }
+        });
         nc$tick = 45;
         nc$fading = fading;
     }

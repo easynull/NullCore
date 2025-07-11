@@ -19,7 +19,7 @@ public abstract class BiomeMixin {
     @Shadow public abstract boolean coldEnoughToSnow(BlockPos pos, int seaLevel);
 
     @Inject(method = "getPrecipitationAt", at = @At("HEAD"), cancellable = true)
-    private void nc$setPrecipitation(BlockPos pos, int seaLevel, CallbackInfoReturnable<Biome.Precipitation> cir) {
+    private void nc$getPrecipitation(BlockPos pos, int seaLevel, CallbackInfoReturnable<Biome.Precipitation> cir) {
         Level level = RenderUtils.mc().level;
         if (level == null) return;
         ResourceLocation id = WorldUtils.getBiome(RenderUtils.mc().level, (Biome) ((Object) this));

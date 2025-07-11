@@ -7,7 +7,7 @@
 >>
 >> PS: If you are using vanilla dimension, please note that the original background music will stop playing in these places
 > ```json
-> "worlds": {
+> "dimensions": {
 >   "minecraft:nether": [
 >     {
 >       "sound": "modid:music.hell", //resourse location SoundEvent
@@ -26,6 +26,19 @@
 >       "sound": "modid:music.goida", //resourse location SoundEvent
 >       "min_delay": 600, //min tick
 >       "max_delay": 1200 //max tick
+>     }
+>   ]
+> }
+> ```
+>
+>>Set music for specific mobs:
+> ```json
+> "mobs": {
+>   "minecraft:zombie": [
+>     {
+>       "sound": "modid:music.zombiebossfight", //resourse location SoundEvent
+>       "min_delay": 100, //min tick
+>       "max_delay": 200 //max tick
 >     }
 >   ]
 > }

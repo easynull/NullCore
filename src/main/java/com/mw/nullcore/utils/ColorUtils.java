@@ -1,5 +1,8 @@
 package com.mw.nullcore.utils;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
+
 import java.awt.*;
 
 public final class ColorUtils {
@@ -42,6 +45,26 @@ public final class ColorUtils {
         float green = argb1[2] + (argb2[2] - argb1[2]) * progress;
         float blue = argb1[3] + (argb2[3] - argb1[3]) * progress;
         return ((int)(red * 255) << 16) | ((int)(green * 255) << 8) | (int)(blue * 255);
+    }
+
+    public static float[] interpolateColor(float speed, int... colors){
+        if (speed == 0) {
+            return ColorUtils.unpackRGBA(colors[0]);
+        }
+        float tick = (Mth.sin((ClientUtils.clientTick + RenderUtils.partialTick) * speed) * 0.5f + 0.5f);
+        float segmentDuration = 1f / (colors.length - 1);
+        int segment = (int)(tick / segmentDuration);
+        float factor = (tick % segmentDuration) / segmentDuration;
+
+        if (segment >= colors.length - 1) {
+            segment = colors.length - 2;
+            factor = 1f;
+        }
+
+        float[] startColor = ColorUtils.unpackRGBA(colors[segment]);
+        float[] endColor = ColorUtils.unpackRGBA(colors[segment + 1]);
+
+        return new float[] {Mth.lerp(factor, startColor[0], endColor[0]), Mth.lerp(factor, startColor[1], endColor[1]), Mth.lerp(factor, startColor[2], endColor[2]), Mth.lerp(factor, startColor[3], endColor[3])};
     }
 
     public static int getRainbowColor(float per) {

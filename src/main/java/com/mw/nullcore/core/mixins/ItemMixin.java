@@ -1,9 +1,12 @@
 package com.mw.nullcore.core.mixins;
 
+import com.mw.nullcore.client.screen.ScreenHave;
 import com.mw.nullcore.core.holders.KeyRegisters;
 import com.mw.nullcore.core.multiblocks.Blueprint;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
@@ -13,10 +16,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static com.mw.nullcore.utils.ClientUtils.setSafeScreen;
+
 @Mixin(Item.class)
 public final class ItemMixin {
     @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
-    private void nc$blueprinter(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
+    private void nc$useOn(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
         Item item = (Item) ((Object) this);
         Level level = context.getLevel();
         Player player = context.getPlayer();
@@ -32,6 +37,18 @@ public final class ItemMixin {
                             cir.setReturnValue(InteractionResult.SUCCESS);
                         }
                     });
+        }
+    }
+
+    @Inject(method = "use", at = @At("HEAD"), cancellable = true)
+    private void nc$use(Level level, Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        Item item = (Item) ((Object) this);
+        if(item instanceof ScreenHave s && s.canOpen(level, player, item.getDefaultInstance())){
+            setSafeScreen(s.getScreen(level, player, null));
+            cir.setReturnValue(InteractionResult.SUCCESS);
+        } else if (item instanceof MenuProvider m){
+            player.openMenu(m);
+            cir.setReturnValue(InteractionResult.SUCCESS);
         }
     }
 }

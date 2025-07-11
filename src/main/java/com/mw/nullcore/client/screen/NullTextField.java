@@ -1,4 +1,4 @@
-package com.mw.nullcore.client.render;
+package com.mw.nullcore.client.screen;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

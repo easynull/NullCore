@@ -8,22 +8,23 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class InventoryBlockEntity extends BlockEntity {
+public class ContainerBlockEntity extends BlockEntity implements ContainerHave {
     public final SimpleContainer inventory;
     public final int maxInSlot;
 
-    public InventoryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int slots, int maxInSlot) {
+    public ContainerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int slots, int maxInSlot) {
         super(type, pos, state);
         inventory = new SimpleContainer(slots);
         this.maxInSlot = maxInSlot;
         inventory.addListener(c -> setChanged());
     }
-    public InventoryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    public ContainerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         this(type, pos, state, 1, 1);
     }
 
@@ -58,5 +59,10 @@ public class InventoryBlockEntity extends BlockEntity {
 
     public ItemStack getFirst(){
         return inventory.getItem(0);
+    }
+
+    @Override
+    public SimpleContainer getInventory() {
+        return inventory;
     }
 }

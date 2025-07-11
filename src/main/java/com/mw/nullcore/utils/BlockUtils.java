@@ -31,6 +31,36 @@ public final class BlockUtils {
         }
     }
 
+    public static void forEachCircle(BlockPos center, int radius, int verticalRadius, Consumer<BlockPos> action) {
+        int radiusSq = radius * radius;
+        for(int x = -radius; x <= radius; ++x) {
+            for(int y = 0; y <= verticalRadius; ++y) {
+                for(int z = -radius; z <= radius; ++z) {
+                    if (x * x + y * y + z * z <= radiusSq) {
+                        action.accept(center.offset(x, y, z));
+                    }
+                }
+            }
+        }
+    }
+
+    private static void forEachDiamond(BlockPos center, int radius, int height, Consumer<BlockPos> action) {
+        if (radius <= 0 || height <= 0) return;
+        for (int y = 0; y <= height; y++) {
+            int currentRadius = radius * (height - y) / height;
+            for (int x = -currentRadius; x <= currentRadius; x++) {
+                for (int z = -currentRadius; z <= currentRadius; z++) {
+                    if (Math.abs(x) + Math.abs(z) <= currentRadius) {
+                        action.accept(center.offset(x, y, z));
+                        if (y != 0) {
+                            action.accept(center.offset(x, -y, z));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public static void forEachNeighbor(BlockPos pos, Consumer<BlockPos> action) {
         for (Direction dir : Direction.values()) {
             action.accept(pos.relative(dir));

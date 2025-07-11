@@ -1,5 +1,6 @@
 package com.mw.nullcore.core.multiblocks;
 
+import com.mw.nullcore.core.holders.KeyRegisters;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
@@ -32,8 +33,12 @@ public interface Blueprint {
 
     Blueprint condition(TriPredicate<Player, Level, ItemStack> condition);
 
-    static ResourceLocation get(DeferredHolder<Blueprint, ?> key){
-        return key.getId();
+    static ResourceLocation get(Blueprint key){
+        return KeyRegisters.MULTIBLOCK_TYPE.getKey(key);
+    }
+
+    static <T extends Blueprint> T get(ResourceLocation id){
+        return (T) KeyRegisters.MULTIBLOCK_TYPE.getValue(id);
     }
 
     default void applyResult(Level level, BlockPos pos, Object result, Direction facing) {

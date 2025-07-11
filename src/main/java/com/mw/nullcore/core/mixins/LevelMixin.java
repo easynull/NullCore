@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Level.class)
 public final class LevelMixin {
     @Inject(method = "getDayTime", at = @At("HEAD"), cancellable = true)
-    private void nc$timeVisual(CallbackInfoReturnable<Long> cir) {
+    private void nc$getTime(CallbackInfoReturnable<Long> cir) {
         Level level = (Level)(Object)this;
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
@@ -28,7 +28,7 @@ public final class LevelMixin {
                 .ifPresent(cir::setReturnValue);
     }
     @Inject(method = "getRainLevel", at = @At("HEAD"), cancellable = true)
-    private void nc$weatherVisual(CallbackInfoReturnable<Float> cir) {
+    private void nc$getRain(CallbackInfoReturnable<Float> cir) {
         Level level = (Level)(Object)this;
         if (!(level.isClientSide())) return;
         Player player = Minecraft.getInstance().player;
