@@ -1,0 +1,48 @@
+package com.mw.nullcore.holders;
+
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+public final class RsBlock extends DeferredRegister<Block> {
+    final String id;
+    final RsItem register;
+    private RsBlock(String namespace, RsItem register) {
+        super(Registries.BLOCK, namespace);
+        this.id = namespace;
+        this.register = register;
+    }
+
+    public static RsBlock create(String modId, RsItem withItems){
+        return new RsBlock(modId, withItems);
+    }
+
+    public <B extends Block> DeferredBlock<B> registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block, Block copy) {
+        DeferredBlock<B> reg = register(name, () -> block.apply((copy != null ? BlockBehaviour.Properties.ofFullCopy(copy) : BlockBehaviour.Properties.of()).setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(id, name)))));
+        if (register != null) register.registerItem(name, prop -> new BlockItem(reg.get(), prop));
+        return reg;
+    }
+
+    public <B extends Block> DeferredBlock<B> registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block) {
+        return registerBlock(name, block, null);
+    }
+
+    @Override
+    public <B extends Block> DeferredBlock<B> register(String name, Supplier<? extends B> sup) {
+        return (DeferredBlock<B>) this.register(name, key -> sup.get());
+    }
+
+    @Override
+    protected <B extends Block> DeferredBlock<B> createHolder(ResourceKey<? extends Registry<Block>> registryKey, ResourceLocation key) {
+        return DeferredBlock.createBlock(ResourceKey.create(registryKey, key));
+    }
+}

@@ -3,7 +3,7 @@ name: Release Mod
 on:
   workflow_dispatch:
   push:
-    branches: [ "1.21.4-neoforge" ]
+    branches: [ "1.21.4" ]
 
 permissions:
   contents: write

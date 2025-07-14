@@ -1,5 +1,0 @@
-{
-  "tooltip.nullcore.info": "Зажмите %s для подробной информации",
-  "nullcore.config": "Конфигуратор NullCore",
-  "nullcore.config.renderParticleGui": "Disables/enables rendering of particles of some items in the inventory"
-}

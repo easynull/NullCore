@@ -1,0 +1,29 @@
+package com.mw.nullcore;
+
+import com.mw.nullcore.client.NullConfig;
+import com.mw.nullcore.core.builders.CommandBuilder;
+import com.mw.nullcore.managers.BiomeRulesFabric;
+import com.mw.nullcore.managers.TracksFabric;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.packs.PackType;
+
+public final class FabricNullCore implements ModInitializer {
+    
+    @Override
+    public void onInitialize() {
+        NullCore.init();
+        NullCore.registerEntityRenderers(EntityRendererRegistry::register);
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new BiomeRulesFabric());
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new TracksFabric());
+        ClientTickEvents.END_CLIENT_TICK.register(mc -> Utils.Client.tickClient());
+        ServerTickEvents.END_SERVER_TICK.register(Utils.Client::tickServer);
+        NullConfig.initialize(FabricLoader.getInstance().getConfigDir());
+        CommandRegistrationCallback.EVENT.register(((dispatcher, non2, non1) -> CommandBuilder.registers(dispatcher)));
+    }
+}
