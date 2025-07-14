@@ -29,15 +29,15 @@ jobs:
       - name: Extract versions from Gradle
         id: get_version
         run: |
-          MOD_VERSION=$(grep -oP 'version\s*=\s*\K.+' gradle.properties)
+          MOD_VERSION=$(grep -oP 'mod_version\s*=\s*\K.+' gradle.properties)
           MC_VERSION=$(grep -oP 'minecraft_version\s*=\s*\K.+' gradle.properties)
-          VERSIONF=$MOD_VERSION
+          VERSION=$MOD_VERSION
           echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
           echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
-          echo "VERSIONF=$VERSIONF" >> $GITHUB_ENV
-          echo "version=$MOD_VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "mod_version=$MOD_VERSION" >> $GITHUB_OUTPUT
           echo "minecraft_version=$MC_VERSION" >> $GITHUB_OUTPUT
-          echo "versionf=$VERSIONF" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up JDK
         uses: actions/setup-java@v4
