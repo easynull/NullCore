@@ -5,7 +5,7 @@ logoFile="logo.png"
 
 [[mods]]
 modId = "${mod_id}"
-version = "${mos_version}"
+version = "${mod_version}"
 displayName = "${mod_name}"
 credits="${credits}"
 authors = "${mod_author}"
