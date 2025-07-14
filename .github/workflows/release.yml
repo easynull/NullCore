@@ -29,7 +29,7 @@ jobs:
       - name: Extract versions from Gradle
         id: get_version
         run: |
-          MOD_VERSION=$(grep -oP 'mod_version\s*=\s*\K.+' gradle.properties)
+          MOD_VERSION=$(grep -oP 'version\s*=\s*\K.+' gradle.properties)
           MC_VERSION=$(grep -oP 'minecraft_version\s*=\s*\K.+' gradle.properties)
           VERSION=$MOD_VERSION
           echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
