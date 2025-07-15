@@ -35,6 +35,7 @@ loom {
 modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "${mod_id}"
+    uploadFile = jar
     versionNumber = "${mod_version}"
     versionType = "${releaseType}"
     gameVersions = ["${minecraft_version}"] as Iterable<? extends String>
@@ -42,10 +43,8 @@ modrinth {
     changelog = rootProject.file("changelog.md").text
 }
 tasks.register('curseforge', TaskPublishCurseForge) {
-    dependsOn('build')
-    group = 'publishing'
     apiToken = System.getenv("CURSEFORGE_TOKEN")
-    def mainFile = upload(findProperty("nullcore"), file("${project.buildDir}/libs/${mod_name}-${project.name}-${mod_version}.jar"))
+    def mainFile = upload(findProperty("1286206"), file("${project.buildDir}/libs/${mod_name}-${project.name}-${mod_version}.jar"))
     mainFile.changelog = rootProject.file('changelog.md').text
     mainFile.addGameVersion(minecraft_version)
     mainFile.releaseType = "${releaseType}"
