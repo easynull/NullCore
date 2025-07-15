@@ -49,7 +49,7 @@ jobs:
 
       - name: Build all modules
         run: |
-          ./gradlew :fabric:build :neo:build --stacktrace
+          ./gradlew build
 
       - name: Collect artifacts
         id: collect-jars
