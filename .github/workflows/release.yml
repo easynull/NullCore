@@ -46,10 +46,13 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
       - name: Build all modules
-        run: |
-          ./gradlew build
+        run: ./gradlew build
 
       - name: Collect artifacts
         id: collect-jars
