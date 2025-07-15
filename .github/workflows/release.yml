@@ -62,7 +62,7 @@ jobs:
           echo "FABRIC_JAR=$FABRIC_JAR" >> $GITHUB_ENV
           
           # NeoForge JAR
-          NEO_JAR=$(ls neo/build/libs/*-${MOD_VERSION}.jar | head -1)
+          NEO_JAR=$(ls neoforge/build/libs/*-${MOD_VERSION}.jar | head -1)
           echo "NEO_JAR=$NEO_JAR" >> $GITHUB_ENV
           
           # Список всех JAR для релиза
@@ -72,11 +72,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.VERSION }}
-          name: ${{ env.VERSION }} (MC ${{ env.MC_VERSION }})
+          name: ${{ env.VERSION }}
           body: |
             ### Minecraft ${{ env.MC_VERSION }}
-            - **Fabric**: `$(basename ${{ env.FABRIC_JAR }})`
-            - **NeoForge**: `$(basename ${{ env.NEO_JAR }})`
           files: |
             ${{ env.FABRIC_JAR }}
             ${{ env.NEO_JAR }}

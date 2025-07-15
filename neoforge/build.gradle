@@ -37,7 +37,7 @@ modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "${mod_id}"
     uploadFile = jar
-    versionNumber = "${mod_version}"
+    versionNumber = "${mod_version}-neoforge"
     versionType = "${releaseType}"
     gameVersions = ["${minecraft_version}"] as Iterable<? extends String>
     loaders = ["neoforge"]
@@ -45,8 +45,7 @@ modrinth {
 }
 tasks.register('curseforge', TaskPublishCurseForge) {
     apiToken = System.getenv("CURSEFORGE_TOKEN")
-    def projectId = "1286206"
-    def mainFile = upload(projectId, jar)
+    def mainFile = upload(curseforge_id, jar)
     mainFile.changelog = rootProject.file('changelog.md').text
     mainFile.addGameVersion(minecraft_version)
     mainFile.releaseType = "${releaseType}"

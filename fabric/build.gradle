@@ -36,7 +36,7 @@ modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "${mod_id}"
     uploadFile = remapJar
-    versionNumber = "${mod_version}"
+    versionNumber = "${mod_version}-fabric"
     versionType = "${releaseType}"
     gameVersions = ["${minecraft_version}"] as Iterable<? extends String>
     loaders = ["fabric"]
@@ -47,7 +47,7 @@ modrinth {
 }
 tasks.register('curseforge', TaskPublishCurseForge) {
     apiToken = System.getenv("CURSEFORGE_TOKEN")
-    def mainFile = upload("1286206", remapJar)
+    def mainFile = upload(curseforge_id, remapJar)
     mainFile.changelog = rootProject.file('changelog.md').text
     mainFile.addGameVersion(minecraft_version)
     mainFile.releaseType = "${releaseType}"
