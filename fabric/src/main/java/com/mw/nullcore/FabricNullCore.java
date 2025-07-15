@@ -3,8 +3,8 @@ package com.mw.nullcore;
 import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.core.builders.CommandBuilder;
 import com.mw.nullcore.core.items.CreativeContent;
-import com.mw.nullcore.managers.BiomeRulesFabric;
-import com.mw.nullcore.managers.TracksFabric;
+import com.mw.nullcore.core.managers.BiomeRulesFabric;
+import com.mw.nullcore.core.managers.TracksFabric;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -30,6 +30,7 @@ public final class FabricNullCore implements ModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(Utils.Client::tickServer);
         NullConfig.initialize(FabricLoader.getInstance().getConfigDir());
         CommandRegistrationCallback.EVENT.register(((dispatcher, non2, non1) -> CommandBuilder.registers(dispatcher)));
+        contentsCreativeTab();
     }
 
     private void contentsCreativeTab(){

@@ -45,7 +45,8 @@ modrinth {
 }
 tasks.register('curseforge', TaskPublishCurseForge) {
     apiToken = System.getenv("CURSEFORGE_TOKEN")
-    def mainFile = upload(findProperty("1286206"), file("${project.buildDir}/libs/${mod_name}-${project.name}-${mod_version}.jar"))
+    def projectId = "1286206"
+    def mainFile = upload(projectId, jar)
     mainFile.changelog = rootProject.file('changelog.md').text
     mainFile.addGameVersion(minecraft_version)
     mainFile.releaseType = "${releaseType}"

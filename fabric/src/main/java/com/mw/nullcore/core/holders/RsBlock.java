@@ -1,4 +1,4 @@
-package com.mw.nullcore.holders;
+package com.mw.nullcore.core.holders;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;

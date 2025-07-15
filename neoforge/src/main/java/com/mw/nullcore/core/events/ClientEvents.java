@@ -1,4 +1,4 @@
-package com.mw.nullcore.events;
+package com.mw.nullcore.core.events;
 
 import com.mw.nullcore.NullCore;
 import com.mw.nullcore.Utils;

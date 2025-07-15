@@ -17,10 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SoundEngine.class)
 public abstract class SoundEngineMixin implements FadeSoundEngine {
-    @Shadow
+    @Shadow(remap = false)
     public abstract void setVolume(SoundInstance sound, float volume);
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private Multimap<SoundSource, SoundInstance> instanceBySource;
 
@@ -34,7 +34,7 @@ public abstract class SoundEngineMixin implements FadeSoundEngine {
     @Unique
     private SoundInstance nc$sound;
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(method = "tick", at = @At("HEAD"), remap = false)
     private void nc$onTick(CallbackInfo ci) {
         if (nc$fading) {
             if (nc$sound != null) {
@@ -62,7 +62,7 @@ public abstract class SoundEngineMixin implements FadeSoundEngine {
         nc$fading = fading;
     }
 
-    @Inject(method = "play", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "play", at = @At("HEAD"), cancellable = true, remap = false)
     private void nc$play(SoundInstance sound, CallbackInfo ci) {
         if (TrackerController.shouldCancelSound(sound)) {
             ci.cancel();

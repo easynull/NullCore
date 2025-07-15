@@ -1,6 +1,5 @@
 package com.mw.nullcore.client.audio;
 
-import com.mw.nullcore.NullCore;
 import com.mw.nullcore.Utils;
 import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.core.mixin.SoundManagerAccessor;
@@ -80,7 +79,7 @@ public final class TrackerTicker {
     }
 
     public void play(Track track, RandomSource rand) {
-        ((FadeSoundEngine)((SoundManagerAccessor)mc.getSoundManager()).getSoundEngine()).nc$fade(true);
+        ((FadeSoundEngine)((SoundManagerAccessor)mc.getSoundManager()).nc$getSoundEngine()).nc$fade(true);
         this.track = new TrackAmbient(track.getSound(), SoundSource.MUSIC);
         this.track.setTick(45);
         mc.getSoundManager().play(this.track);

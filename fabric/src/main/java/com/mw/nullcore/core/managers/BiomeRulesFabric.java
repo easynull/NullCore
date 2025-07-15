@@ -1,6 +1,7 @@
-package com.mw.nullcore.managers;
+package com.mw.nullcore.core.managers;
 
 import com.mw.nullcore.NullCore;
+import com.mw.nullcore.managers.BiomeRulesManager;
 import net.fabricmc.fabric.api.resource.SimpleResourceReloadListener;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
