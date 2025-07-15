@@ -20,24 +20,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get commit message
-        id: commit_message
+      - name: Get version info
+        id: versions
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "COMMIT_MESSAGE=${COMMIT_MSG}" >> $GITHUB_ENV
-
-      - name: Extract versions from Gradle
-        id: get_version
-        run: |
-          MOD_VERSION=$(grep -oP 'mod_version\s*=\s*\K.+' gradle.properties)
-          MC_VERSION=$(grep -oP 'minecraft_version\s*=\s*\K.+' gradle.properties)
-          VERSION=$MOD_VERSION
+          MOD_VERSION=$(grep -oP 'mod_version\s*=\s*"\K[^"]+' gradle.properties)
+          MC_VERSION=$(grep -oP 'minecraft_version\s*=\s*"\K[^"]+' gradle.properties)
           echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
           echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "mod_version=$MOD_VERSION" >> $GITHUB_OUTPUT
-          echo "minecraft_version=$MC_VERSION" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=v${MOD_VERSION}-${MC_VERSION}" >> $GITHUB_ENV
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -45,37 +35,46 @@ jobs:
           distribution: 'temurin'
           java-version: 21
 
-      - name: Cache Gradle dependencies
+      - name: Cache Gradle
         uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('/*.gradle*','/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Build all modules
+        run: |
+          ./gradlew :fabric:build :neo:build --stacktrace
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
-
-      - name: Build the mod
-        run: ./gradlew build
+      - name: Collect artifacts
+        id: collect-jars
+        run: |
+          # Fabric JAR
+          FABRIC_JAR=$(ls fabric/build/libs/*-${MOD_VERSION}.jar | head -1)
+          echo "FABRIC_JAR=$FABRIC_JAR" >> $GITHUB_ENV
+          
+          # NeoForge JAR
+          NEO_JAR=$(ls neo/build/libs/*-${MOD_VERSION}.jar | head -1)
+          echo "NEO_JAR=$NEO_JAR" >> $GITHUB_ENV
+          
+          # Список всех JAR для релиза
+          echo "ARTIFACTS=${FABRIC_JAR},${NEO_JAR}" >> $GITHUB_ENV
 
       - name: Create Release
-        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.VERSION }}
-          name: Release ${{ env.VERSION }}
+          name: ${{ env.VERSION }} (MC ${{ env.MC_VERSION }})
           body: |
-            ${{ env.COMMIT_MESSAGE }}
-          draft: false
-          prerelease: false
-          files: build/libs/*-${{ env.MOD_VERSION }}.jar
+            ### Minecraft ${{ env.MC_VERSION }}
+            - **Fabric**: `$(basename ${{ env.FABRIC_JAR }})`
+            - **NeoForge**: `$(basename ${{ env.NEO_JAR }})`
+          files: |
+            ${{ env.FABRIC_JAR }}
+            ${{ env.NEO_JAR }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   modrinth:
     needs: release
     environment: Release
@@ -106,7 +105,33 @@ jobs:
         run: ./gradlew modrinth
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+  curseforge:
+    needs: release
+    environment: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
+      - name: Restore Gradle Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('/*.gradle*','/gradle-wrapper.properties') }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
       - name: Publish to CurseForge
         run: ./gradlew curseforge
         env:
-          MODRINTH_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
