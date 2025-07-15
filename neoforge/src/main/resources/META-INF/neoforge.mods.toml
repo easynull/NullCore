@@ -1,7 +1,7 @@
 modLoader = "javafml"
 loaderVersion = "${neoforge_loader_version_range}"
 license = "${license}"
-logoFile="logo.png"
+logoFile= "icon.png"
 
 [[mods]]
 modId = "${mod_id}"

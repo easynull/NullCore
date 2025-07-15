@@ -1,17 +1,20 @@
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
+
 plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
+    id 'com.modrinth.minotaur' version "2.+"
+    id 'net.darkhax.curseforgegradle' version '1.1.18'
 }
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     mappings loom.layered {
         officialMojangMappings()
         parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
     }
-    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 }
-
 loom {
     def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
     if (aw.exists()) {
@@ -27,11 +30,24 @@ loom {
             ideConfigGenerated(true)
             runDir('runs/client')
         }
-        server {
-            server()
-            setConfigName('Fabric Server')
-            ideConfigGenerated(true)
-            runDir('runs/server')
-        }
     }
+}
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "${mod_id}"
+    versionNumber = "${mod_version}"
+    versionType = "${releaseType}"
+    gameVersions = ["${minecraft_version}"] as Iterable<? extends String>
+    loaders = ["fabric"]
+    changelog = rootProject.file("changelog.md").text
+}
+tasks.register('curseforge', TaskPublishCurseForge) {
+    dependsOn('build')
+    group = 'publishing'
+    apiToken = System.getenv("CURSEFORGE_TOKEN")
+    def mainFile = upload(findProperty("nullcore"), file("${project.buildDir}/libs/${mod_name}-${project.name}-${mod_version}.jar"))
+    mainFile.changelog = rootProject.file('changelog.md').text
+    mainFile.addGameVersion(minecraft_version)
+    mainFile.releaseType = "${releaseType}"
+    mainFile.addModLoader("Fabric")
 }

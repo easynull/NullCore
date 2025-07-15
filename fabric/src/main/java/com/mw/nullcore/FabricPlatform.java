@@ -5,7 +5,7 @@ import com.mw.nullcore.platform.IPlatform;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 
-public class FabricPlatform implements IPlatform {
+public final class FabricPlatform implements IPlatform {
     @Override
     public String getPlatformName() {
         return "Fabric";
