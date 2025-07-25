@@ -1,11 +1,12 @@
 package com.mw.nullcore;
 
 import java.util.function.Supplier;
-import com.mw.nullcore.platform.IPlatform;
+import com.mw.nullcore.platform.Platform;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 
-public final class FabricPlatform implements IPlatform {
+public final class FabricPlatform implements Platform {
     @Override
     public String getPlatformName() {
         return "Fabric";

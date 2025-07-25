@@ -1,4 +1,4 @@
-package com.mw.nullcore.managers;
+package com.mw.nullcore.core.managers;
 
 import com.google.gson.*;
 import net.minecraft.resources.ResourceLocation;

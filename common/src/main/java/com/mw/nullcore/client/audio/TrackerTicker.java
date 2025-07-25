@@ -3,7 +3,7 @@ package com.mw.nullcore.client.audio;
 import com.mw.nullcore.Utils;
 import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.core.mixin.SoundManagerAccessor;
-import com.mw.nullcore.managers.TracksManager;
+import com.mw.nullcore.core.managers.TracksManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
@@ -79,7 +79,7 @@ public final class TrackerTicker {
     }
 
     public void play(Track track, RandomSource rand) {
-        ((FadeSoundEngine)((SoundManagerAccessor)mc.getSoundManager()).nc$getSoundEngine()).nc$fade(true);
+        ((Fading)((SoundManagerAccessor)mc.getSoundManager()).nc$getSoundEngine()).setFade$nc(true);
         this.track = new TrackAmbient(track.getSound(), SoundSource.MUSIC);
         this.track.setTick(45);
         mc.getSoundManager().play(this.track);

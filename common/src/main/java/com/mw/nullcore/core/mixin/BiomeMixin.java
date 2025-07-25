@@ -1,7 +1,7 @@
 package com.mw.nullcore.core.mixin;
 
 import com.mw.nullcore.Utils;
-import com.mw.nullcore.managers.BiomeRulesManager;
+import com.mw.nullcore.core.managers.BiomeRulesManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;

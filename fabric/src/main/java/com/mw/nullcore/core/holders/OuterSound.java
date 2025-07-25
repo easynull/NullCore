@@ -8,16 +8,16 @@ import net.minecraft.sounds.SoundEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class RsSound {
+public final class OuterSound {
     private final String modid;
     private final Map<ResourceLocation, SoundEvent> sounds = new HashMap<>();
 
-    private RsSound(String modid) {
+    private OuterSound(String modid) {
         this.modid = modid;
     }
 
-    public static RsSound create(String modid) {
-        return new RsSound(modid);
+    public static OuterSound create(String modid) {
+        return new OuterSound(modid);
     }
 
     public <S extends SoundEvent> S registerSound(String id){

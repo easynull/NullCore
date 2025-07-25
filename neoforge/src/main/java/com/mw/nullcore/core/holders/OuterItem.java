@@ -11,15 +11,15 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class RsItem extends DeferredRegister<Item> {
+public final class OuterItem extends DeferredRegister<Item> {
     final String id;
-    private RsItem(String modId) {
+    private OuterItem(String modId) {
         super(Registries.ITEM, modId);
         this.id = modId;
     }
 
-    public static RsItem create(String modId){
-        return new RsItem(modId);
+    public static OuterItem create(String modId){
+        return new OuterItem(modId);
     }
 
     public <I extends Item > DeferredItem<I> registerItem(String name, Function<Item.Properties, ? extends I> item) {

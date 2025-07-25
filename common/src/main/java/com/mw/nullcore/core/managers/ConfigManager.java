@@ -1,4 +1,4 @@
-package com.mw.nullcore.managers;
+package com.mw.nullcore.core.managers;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -14,11 +14,10 @@ import java.util.Map;
 import static com.mw.nullcore.Utils.Json.addValueToJson;
 import static com.mw.nullcore.Utils.Json.parseJsonValue;
 
-public class ConfigManager {
+public final class ConfigManager {
     private static Initialize INSTANCE;
-    public static String modid = "nullcore";
 
-    public static void initialize(Path configDir, Runnable registers) {
+    public static void register(String modid, Path configDir, Runnable registers) {
         Path configPath = configDir.resolve(modid + ".json");
         INSTANCE = new Initialize(configPath);
         registers.run();
@@ -29,14 +28,6 @@ public class ConfigManager {
         Initialize.Unit<V> unit = Initialize.Unit.of(comment, defaultValue);
         INSTANCE.config.put(key, unit);
         return unit;
-    }
-
-    public static void load() {
-        INSTANCE.load();
-    }
-
-    public static void save() {
-        INSTANCE.save();
     }
 
     public static <V> Initialize.Unit<V> getUnit(String key) {

@@ -24,8 +24,8 @@
 >   "minecraft:ancient_city": [
 >     {
 >       "sound": "modid:music.goida", //resourse location SoundEvent
->       "min_delay": 600, //min tick
->       "max_delay": 1200 //max tick
+>       "min_delay": 600, //min tick before the start
+>       "max_delay": 1200 //max tick before the start
 >     }
 >   ]
 > }
@@ -37,8 +37,8 @@
 >   "minecraft:zombie": [
 >     {
 >       "sound": "modid:music.zombiebossfight", //resourse location SoundEvent
->       "min_delay": 100, //min tick
->       "max_delay": 200 //max tick
+>       "min_delay": 100, //min tick before the start
+>       "max_delay": 200 //max tick before the start
 >     }
 >   ]
 > }

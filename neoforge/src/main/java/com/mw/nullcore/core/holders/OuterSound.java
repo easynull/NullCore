@@ -10,15 +10,15 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 
-public final class RsSound extends DeferredRegister<SoundEvent> {
+public final class OuterSound extends DeferredRegister<SoundEvent> {
     final String id;
-    private RsSound(String namespace) {
+    private OuterSound(String namespace) {
         super(Registries.SOUND_EVENT, namespace);
         this.id = namespace;
     }
 
-    public static RsSound create(String modId){
-        return new RsSound(modId);
+    public static OuterSound create(String modId){
+        return new OuterSound(modId);
     }
 
     public <S extends SoundEvent> DeferredHolder<SoundEvent, S> registerSound(String id) {

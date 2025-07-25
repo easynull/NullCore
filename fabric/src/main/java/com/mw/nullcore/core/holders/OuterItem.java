@@ -10,16 +10,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public final class RsItem {
+public final class OuterItem {
     private final String modid;
     private final Map<ResourceLocation, Item> items = new HashMap<>();
 
-    private RsItem(String modid) {
+    private OuterItem(String modid) {
         this.modid = modid;
     }
 
-    public static RsItem create(String modid) {
-        return new RsItem(modid);
+    public static OuterItem create(String modid) {
+        return new OuterItem(modid);
     }
 
     public <I extends Item> I registerItem(String id,Function<Item.Properties, ? extends I> item){

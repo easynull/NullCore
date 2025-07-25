@@ -1,6 +1,7 @@
 package com.mw.nullcore;
 
 import com.mw.nullcore.client.NullConfig;
+import com.mw.nullcore.core.NullEntities;
 import com.mw.nullcore.core.builders.CommandBuilder;
 import com.mw.nullcore.core.items.CreativeContent;
 import com.mw.nullcore.core.events.ClientEvents;
@@ -13,6 +14,8 @@ import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import static com.mw.nullcore.NullCore.ID;
 

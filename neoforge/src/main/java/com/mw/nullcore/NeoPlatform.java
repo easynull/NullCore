@@ -1,6 +1,6 @@
 package com.mw.nullcore;
 
-import com.mw.nullcore.platform.IPlatform;
+import com.mw.nullcore.platform.Platform;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static com.mw.nullcore.NullCore.ID;
 
-public final class NeoPlatform implements IPlatform {
+public final class NeoPlatform implements Platform {
     private static final Map<ResourceKey<?>, DeferredRegister> cache = new Reference2ObjectOpenHashMap<>();
 
     @Override

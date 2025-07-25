@@ -12,21 +12,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public final class RsBlock {
+public final class OuterBlock {
     private final String modid;
     private final Map<ResourceLocation, Block> blocks = new HashMap<>();
-    private final RsItem items;
+    private final OuterItem items;
 
-    private RsBlock(String modid, RsItem items) {
+    private OuterBlock(String modid, OuterItem items) {
         this.modid = modid;
         this.items = items;
     }
 
-    public static RsBlock create(String modid, RsItem items) {
-        return new RsBlock(modid, items);
+    public static OuterBlock create(String modid, OuterItem items) {
+        return new OuterBlock(modid, items);
     }
 
-    public static RsBlock create(String modid) {
+    public static OuterBlock create(String modid) {
         return create(modid, null);
     }
 

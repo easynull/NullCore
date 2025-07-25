@@ -11,16 +11,16 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class RsBlockEntity {
+public final class OuterBlockEntity {
     private final String modid;
     private final Map<ResourceLocation, BlockEntityType<?>> types = new HashMap<>();
 
-    private RsBlockEntity(String modid) {
+    private OuterBlockEntity(String modid) {
         this.modid = modid;
     }
 
-    public static RsBlockEntity create(String modid) {
-        return new RsBlockEntity(modid);
+    public static OuterBlockEntity create(String modid) {
+        return new OuterBlockEntity(modid);
     }
 
     public <T extends BlockEntity> BlockEntityType<T> registerType(String id, FabricBlockEntityTypeBuilder.Factory<? extends T> factory, Block... blocks){

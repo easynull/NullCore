@@ -1,6 +1,6 @@
 package com.mw.nullcore.core.mixin;
 
-import com.mw.nullcore.managers.BiomeRulesManager;
+import com.mw.nullcore.core.managers.BiomeRulesManager;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;

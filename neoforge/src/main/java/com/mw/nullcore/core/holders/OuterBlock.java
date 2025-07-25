@@ -13,17 +13,17 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class RsBlock extends DeferredRegister<Block> {
+public final class OuterBlock extends DeferredRegister<Block> {
     final String id;
-    final RsItem register;
-    private RsBlock(String namespace, RsItem register) {
+    final OuterItem register;
+    private OuterBlock(String namespace, OuterItem register) {
         super(Registries.BLOCK, namespace);
         this.id = namespace;
         this.register = register;
     }
 
-    public static RsBlock create(String modId, RsItem withItems){
-        return new RsBlock(modId, withItems);
+    public static OuterBlock create(String modId, OuterItem withItems){
+        return new OuterBlock(modId, withItems);
     }
 
     public <B extends Block> DeferredBlock<B> registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block, Block copy) {

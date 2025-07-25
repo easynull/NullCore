@@ -1,8 +1,8 @@
 package com.mw.nullcore.core.events;
 
 import com.mw.nullcore.Utils;
-import com.mw.nullcore.managers.BiomeRulesManager;
-import com.mw.nullcore.managers.TracksManager;
+import com.mw.nullcore.core.managers.BiomeRulesManager;
+import com.mw.nullcore.core.managers.TracksManager;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
