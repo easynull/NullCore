@@ -79,7 +79,7 @@ public final class TrackerTicker {
     }
 
     public void play(Track track, RandomSource rand) {
-        ((Fading)((SoundManagerAccessor)mc.getSoundManager()).nc$getSoundEngine()).setFade$nc(true);
+        ((Fading)((SoundManagerAccessor)mc.getSoundManager()).getSoundEngine()).setFade(true);
         this.track = new TrackAmbient(track.getSound(), SoundSource.MUSIC);
         this.track.setTick(45);
         mc.getSoundManager().play(this.track);

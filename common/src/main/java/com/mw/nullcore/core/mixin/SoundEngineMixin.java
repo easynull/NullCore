@@ -17,10 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SoundEngine.class)
 public abstract class SoundEngineMixin implements Fading {
-    @Shadow(remap = false)
+    @Shadow
     public abstract void setVolume(SoundInstance sound, float volume);
 
-    @Shadow(remap = false)
+    @Shadow
     @Final
     private Multimap<SoundSource, SoundInstance> instanceBySource;
 
@@ -34,7 +34,7 @@ public abstract class SoundEngineMixin implements Fading {
     @Unique
     private SoundInstance nc$sound;
 
-    @Inject(method = "tick", at = @At("HEAD"), remap = false)
+    @Inject(method = "tick", at = @At("HEAD"))
     private void nc$onTick(CallbackInfo ci) {
         if (nc$fading) {
             if (nc$sound != null) {
@@ -43,16 +43,16 @@ public abstract class SoundEngineMixin implements Fading {
                     setVolume(nc$sound, Math.max(0, nc$tick / 45.0f));
                 } else {
                     stop(nc$sound);
-                    setFade$nc(false);
+                    setFade(false);
                 }
             } else {
-                setFade$nc(false);
+                setFade(false);
             }
         }
     }
 
     @Unique
-    public void setFade$nc(boolean fading) {
+    public void setFade(boolean fading) {
         instanceBySource.get(SoundSource.MUSIC).stream().findFirst().ifPresent(s -> {
             if (!(s instanceof TrackerTicker.TrackAmbient)) {
                 nc$sound = s;
@@ -62,7 +62,7 @@ public abstract class SoundEngineMixin implements Fading {
         nc$fading = fading;
     }
 
-    @Inject(method = "play", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "play", at = @At("HEAD"), cancellable = true)
     private void nc$play(SoundInstance sound, CallbackInfo ci) {
         if (TrackerController.shouldCancelSound(sound)) {
             ci.cancel();

@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Block.class)
 public final class BlockMixin {
-    @Inject(at = @At(value = "TAIL"), method = "setPlacedBy")
+    @Inject(method = "setPlacedBy", at = @At(value = "TAIL"))
     private void nc$setPlaced(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack, CallbackInfo ci) {
         if (!(state.getBlock() instanceof SaveDataBlock b && state.hasBlockEntity() && stack.has(NullComponents.nbt.get()))) return;
         level.getBlockEntity(pos).loadCustomOnly(stack.get(NullComponents.nbt.get()), level.registryAccess());

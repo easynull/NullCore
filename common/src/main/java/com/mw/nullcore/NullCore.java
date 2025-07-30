@@ -26,7 +26,7 @@ public final class NullCore {
 		return ResourceKey.create(key, defaultLoc(id));
 	}
 
-	public static void init(){
+	public static void init() {
 		NullComponents.initialization();
 		NullEntities.initialization();
 	}

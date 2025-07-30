@@ -8,25 +8,29 @@ import com.mw.nullcore.NullCore;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static com.mw.nullcore.Utils.Json.addValueToJson;
 import static com.mw.nullcore.Utils.Json.parseJsonValue;
 
 public final class ConfigManager {
     private static Initialize INSTANCE;
+    public static Map<String, Set<Initialize.Unit<?>>> variables = new HashMap<>();
 
     public static void register(String modid, Path configDir, Runnable registers) {
         Path configPath = configDir.resolve(modid + ".json");
-        INSTANCE = new Initialize(configPath);
+        INSTANCE = new Initialize(configPath, modid);
         registers.run();
         INSTANCE.load();
     }
 
     public static <V> Initialize.Unit<V> create(String key, String comment, V defaultValue) {
-        Initialize.Unit<V> unit = Initialize.Unit.of(comment, defaultValue);
+        Initialize.Unit<V> unit = Initialize.Unit.of(key, comment, defaultValue);
         INSTANCE.config.put(key, unit);
+        variables.put(INSTANCE.modid, Set.of(unit));
         return unit;
     }
 
@@ -37,7 +41,7 @@ public final class ConfigManager {
     public static <V> void set(String key, V value) {
         Initialize.Unit<V> unit = getUnit(key);
         if (unit != null) {
-            INSTANCE.config.put(key, Initialize.Unit.of(unit.comment(), value));
+            INSTANCE.config.put(key, Initialize.Unit.of(key, unit.comment(), value));
             unit.set(value);
         }
     }
@@ -45,9 +49,11 @@ public final class ConfigManager {
     public static final class Initialize {
         public final Map<String, Unit<?>> config = new LinkedHashMap<>();
         private final Path configPath;
+        public final String modid;
 
-        public Initialize(Path configPath) {
+        public Initialize(Path configPath, String modid) {
             this.configPath = configPath;
+            this.modid = modid;
         }
 
         void load() {
@@ -95,16 +101,17 @@ public final class ConfigManager {
         }
 
         public static class Unit<V> {
-            final String comment;
+            final String comment, name;
             V value;
 
-            private Unit(String comment, V value) {
+            private Unit(String name, String comment, V value) {
                 this.value = value;
+                this.name = name;
                 this.comment = comment;
             }
 
-            public static <V> Unit<V> of(String comment, V value) {
-                return new Unit<>(comment, value);
+            public static <V> Unit<V> of(String name, String comment, V value) {
+                return new Unit<>(name, comment, value);
             }
 
             public V get(){
@@ -115,8 +122,34 @@ public final class ConfigManager {
                 this.value = value;
             }
 
+            public void setParse(String value){
+                this.value = parseValue(value);
+            }
+
             public String comment(){
                 return comment;
+            }
+
+            public String name(){
+                return name;
+            }
+
+            @SuppressWarnings("unchecked")
+            private V parseValue(String value) {
+                if (get() instanceof Boolean) {
+                    return (V) Boolean.valueOf(value);
+                } else if (get() instanceof Byte) {
+                    return (V) Byte.valueOf(value);
+                } else if (get() instanceof Integer) {
+                    return (V) Integer.valueOf(value);
+                } else if (get() instanceof Float) {
+                    return (V) Float.valueOf(value);
+                } else if (get() instanceof Double) {
+                    return (V) Double.valueOf(value);
+                } else if (get() instanceof String) {
+                    return (V) value;
+                }
+                return null;
             }
         }
     }

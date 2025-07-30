@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 public final class CommandBuilder {
     private static final List<Consumer<CommandDispatcher<CommandSourceStack>>> commands = new ArrayList<>();
 
+    //TODO: NullCore registers commands itself
     public static void registers(CommandDispatcher dispatcher) {
         commands.forEach(consumer -> consumer.accept(dispatcher));
     }
@@ -44,6 +45,11 @@ public final class CommandBuilder {
         public Builder executes(CommandExecutor executor) {
             LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal(id).requires(src -> src.hasPermission(permission)).executes(executor::execute);
             arguments.forEach(cmd::then);
+            return this;
+        }
+
+        public Builder create(CommandExecutor executor) {
+            LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal(id).requires(src -> src.hasPermission(permission)).executes(executor::execute);
             commands.add(dispatcher -> dispatcher.register(cmd));
             return this;
         }

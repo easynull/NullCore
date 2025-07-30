@@ -6,16 +6,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-public final class RsMultiblock {
+public final class OuterMultiblock {
     public static final Map<ResourceLocation, Blueprint> multiblocks = new ConcurrentHashMap<>();
     final private String id;
 
-    private RsMultiblock(String id){
+    private OuterMultiblock(String id){
         this.id = id;
     }
 
-    public static RsMultiblock create(String modid){
-        return new RsMultiblock(modid);
+    public static OuterMultiblock create(String modid){
+        return new OuterMultiblock(modid);
     }
 
     public <B extends Blueprint> B registerBlueprint(String name, Supplier<B> multiblock) {

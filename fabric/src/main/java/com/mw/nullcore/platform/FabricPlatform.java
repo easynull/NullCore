@@ -1,10 +1,10 @@
-package com.mw.nullcore;
+package com.mw.nullcore.platform;
 
 import java.util.function.Supplier;
-import com.mw.nullcore.platform.Platform;
+
+import com.mw.nullcore.NullCore;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
 
 public final class FabricPlatform implements Platform {
     @Override

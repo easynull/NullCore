@@ -1,6 +1,5 @@
-package com.mw.nullcore;
+package com.mw.nullcore.platform;
 
-import com.mw.nullcore.platform.Platform;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
