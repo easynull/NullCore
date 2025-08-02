@@ -14,7 +14,7 @@ public final class SearchBox extends EditBox {
     private List<String> searchList = new ArrayList<>();
     private Map<String, Object> searchMap = new HashMap<>();
     private Consumer<List<String>> consumerResult;
-    private List<String> result = new ArrayList<>();
+    private final List<String> result = new ArrayList<>();
     private boolean searchInMapKeys;
 
     public SearchBox(Font font, int x, int y, int width, int height, Component message) {
@@ -55,7 +55,7 @@ public final class SearchBox extends EditBox {
                 }
             });
         } else {
-            searchList.stream().filter(item -> item.toLowerCase().contains(searchText)).forEach(results::add);
+            searchList.stream().filter(obj -> obj.toLowerCase().contains(searchText)).forEach(results::add);
         }
         if (consumerResult != null) {
             consumerResult.accept(results);
