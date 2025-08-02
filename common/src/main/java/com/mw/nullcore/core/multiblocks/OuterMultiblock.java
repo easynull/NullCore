@@ -18,7 +18,7 @@ public final class OuterMultiblock {
         return new OuterMultiblock(modid);
     }
 
-    public <B extends Blueprint> B registerBlueprint(String name, Supplier<B> multiblock) {
+    public <B extends Blueprint> B registerMultiblock(String name, Supplier<B> multiblock) {
         multiblocks.put(ResourceLocation.fromNamespaceAndPath(id, name), multiblock.get());
         return multiblock.get();
     }

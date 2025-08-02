@@ -12,10 +12,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.function.Supplier;
 
-public class BaseEntityBlock extends Block implements EntityBlock {
-    private final Supplier<BlockEntityType<?>> be;
+public class EasyEntityBlock extends Block implements EntityBlock {
+    final Supplier<BlockEntityType<?>> be;
 
-    public BaseEntityBlock(Properties properties, Supplier<BlockEntityType<?>> blockEntityType) {
+    public EasyEntityBlock(Properties properties, Supplier<BlockEntityType<?>> blockEntityType) {
         super(properties);
         this.be = blockEntityType;
     }
@@ -27,6 +27,11 @@ public class BaseEntityBlock extends Block implements EntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return be == type ? Tickable.getTicker() : null;
+        if (isClientTicker(level, state) && !level.isClientSide()) return null;
+        return Tickable.getTicker();
+    }
+
+    public boolean isClientTicker(Level level, BlockState state){
+        return true;
     }
 }

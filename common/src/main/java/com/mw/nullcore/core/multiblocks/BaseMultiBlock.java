@@ -70,9 +70,9 @@ public class BaseMultiBlock implements Blueprint {
 
     @Override
     public Structure getStructure(Level level, BlockPos pos) {
-        for (byte yy = (byte) -ySize; yy <= 0; ++yy) {
-            for (byte xx = (byte) -xSize; xx <= 0; ++xx) {
-                for (byte zz = (byte) -zSize; zz <= 0; ++zz) {
+        for (int yy =  -ySize; yy <= 0; ++yy) {
+            for (int xx = -xSize; xx <= 0; ++xx) {
+                for (int zz = -zSize; zz <= 0; ++zz) {
                     BlockPos p2 = pos.offset(xx, yy, zz);
                     Direction d = validateStructure(level, p2);
                     if (d != null) {
@@ -88,11 +88,11 @@ public class BaseMultiBlock implements Blueprint {
     public void onBuilt(Level level, BlockPos startPos, Structure structure, Object... other) {
         if (structure == null) return;
         BlockPos p2 = startPos.offset(structure.xOffset(), structure.yOffset(), structure.zOffset());
-        for (byte y = 0; y < ySize; ++y) {
+        for (int y = 0; y < ySize; ++y) {
             Rotation rot = new Rotation(this.structure[y]);
             rot.rotateRight(3 - structure.facing().get2DDataValue());
-            for (byte x = 0; x < rot.rows; ++x) {
-                for (byte z = 0; z < rot.cols; ++z) {
+            for (int x = 0; x < rot.rows; ++x) {
+                for (int z = 0; z < rot.cols; ++z) {
                     BlockPos p3 = p2.offset(x, -y + (ySize - 1), z);
                     level.destroyBlock(p3, false);
                     if (rot.matrix[x][z] instanceof Result result) {

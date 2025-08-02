@@ -2,6 +2,7 @@ package com.mw.nullcore.core.mixin;
 
 import com.mw.nullcore.client.screen.ScreenHave;
 import com.mw.nullcore.core.NullComponents;
+import com.mw.nullcore.core.blocks.MenuHave;
 import com.mw.nullcore.core.blocks.SaveDataBlock;
 import com.mw.nullcore.core.blocks.type.ContainerHave;
 import net.minecraft.core.BlockPos;
@@ -34,13 +35,13 @@ public final class BlockBehaviourMixin {
 
     @Inject(method = "useWithoutItem", at = @At(value = "HEAD"), cancellable = true)
     private void nc$useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
-        if(state.hasBlockEntity() && level.getBlockEntity(pos) instanceof ScreenHave s && s.canOpen(level, player, state)){
+        if(state.hasBlockEntity() && level.getBlockEntity(pos) instanceof ScreenHave s && s.useMixinSetting() && s.canOpen(level, player, state)){
             setSafeScreen(s.getScreen(level, player));
             cir.setReturnValue(InteractionResult.SUCCESS);
-        } else if (state.getBlock() instanceof ScreenHave s && s.canOpen(level, player, state)) {
+        } else if (state.getBlock() instanceof ScreenHave s && s.useMixinSetting() && s.canOpen(level, player, state)) {
             setSafeScreen(s.getScreen(level, player));
             cir.setReturnValue(InteractionResult.SUCCESS);
-        } else if (level.getBlockEntity(pos) instanceof MenuProvider m) {
+        } else if (level.getBlockEntity(pos) instanceof MenuHave m && m.useMixinSetting() && m.canOpen(level, player, state)) {
             player.openMenu(m);
             cir.setReturnValue(InteractionResult.SUCCESS);
         }

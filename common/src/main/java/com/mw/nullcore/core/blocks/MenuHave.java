@@ -1,12 +1,10 @@
-package com.mw.nullcore.client.screen;
+package com.mw.nullcore.core.blocks;
 
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-public interface ScreenHave {
-    Screen getScreen(Level level, Player player);
-
+public interface MenuHave extends MenuProvider {
     default boolean canOpen(Level level, Player player, Object it){
         return true;
     }
