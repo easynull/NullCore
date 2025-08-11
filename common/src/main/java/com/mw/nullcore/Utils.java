@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -135,6 +136,17 @@ public final class Utils {
                     }
                 }
             }
+        }
+
+        public static boolean isFullVoxel(BlockState state, boolean inHeight) {
+            VoxelShape shape = state.getCollisionShape(null, null);
+            return inHeight ? shape.bounds().minY == 0.0 && shape.bounds().maxY == 1.0 : (shape.bounds().minX == 0.0 && shape.bounds().maxX == 1.0 && shape.bounds().minY == 0.0 && shape.bounds().maxY == 1.0 && shape.bounds().minZ == 0.0 && shape.bounds().maxZ == 1.0);
+        }
+
+        public static void updateBlockEntity(BlockEntity be) {
+            if (be.getLevel() == null) return;
+            be.setChanged();
+            be.getLevel().sendBlockUpdated(be.getBlockPos(), be.getBlockState(), be.getBlockState(), 3);
         }
     }
 
@@ -400,11 +412,11 @@ public final class Utils {
             return component;
         }
 
-        private void sendMessage(Player player, String key, ChatFormatting color) {
+        public static void sendMessage(Player player, String key, ChatFormatting color) {
             player.displayClientMessage(Component.translatable(key).withStyle(color), true);
         }
 
-        private void addPositionTooltip(List<Component> tooltip, BlockPos pos, String translationKey, ChatFormatting color1, ChatFormatting color2) {
+        public static void addPositionTooltip(List<Component> tooltip, BlockPos pos, String translationKey, ChatFormatting color1, ChatFormatting color2) {
             if (pos != null) {
                 tooltip.add(Component.translatable(translationKey).withStyle(ChatFormatting.YELLOW));
                 tooltip.add(Component.literal(String.format("X: %d, Y: %d, Z: %d", pos.getX(), pos.getY(), pos.getZ())).withStyle(ChatFormatting.GRAY));
