@@ -27,11 +27,10 @@ public class EasyEntityBlock extends Block implements EntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (isClientTicker(level, state) && !level.isClientSide()) return null;
         return Tickable.getTicker();
     }
 
-    public boolean isClientTicker(Level level, BlockState state){
-        return true;
-    }
+//    public boolean isClientTicker(Level level, BlockState state){
+//        return true;
+//    }
 }
