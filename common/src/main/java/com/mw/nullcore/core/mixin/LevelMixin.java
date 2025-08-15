@@ -1,5 +1,6 @@
 package com.mw.nullcore.core.mixin;
 
+import com.mw.nullcore.Utils;
 import com.mw.nullcore.core.managers.BiomeRulesManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;

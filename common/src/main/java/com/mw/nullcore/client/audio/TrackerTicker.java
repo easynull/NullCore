@@ -10,13 +10,13 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -26,28 +26,28 @@ public final class TrackerTicker {
     private TrackAmbient track;
     private Track selectedTrack;
     private int timeNextTrack = 300;
-    private ResourceLocation currentStage;
+    public ResourceLocation currentStage;
 
     public TrackerTicker() {}
 
-    public void tick(ServerPlayer player) {
-        if (!(player.level() instanceof ServerLevel level)) return;
-        var id = getStage(level, player.blockPosition());
+    public void tick() {
+        if(mc.player == null || mc.level == null) return;
+        var id = getStage(mc.level, mc.player.blockPosition());
 
         if (selectedTrack == null || timeNextTrack == 0) {
             selectedTrack = null;
             var tracks = TracksManager.selfTracks.get(id);
             if (tracks != null) {
-                selectedTrack = getTrack(tracks, level);
+                selectedTrack = getTrack(tracks, mc.level);
             }
         }
-        if(id != currentStage) stop(level.random);
+        if (id != currentStage) stop(mc.level.random);
         currentStage = id;
 
-        if (canPlay()) play(selectedTrack, level.random);
+        if (canPlay()) play(selectedTrack, mc.level.random);
     }
-
-    private ResourceLocation getStage(ServerLevel level, BlockPos pos) {
+    //TODO: Structure validity temporarily removed due to server side issues
+    private ResourceLocation getStage(Level level, BlockPos pos){
         for (Entity entity : Utils.Level.getEntities(level, pos, NullConfig.radiusEntityTrack.get())) {
             ResourceLocation entityId = EntityType.getKey(entity.getType());
             if (TracksManager.selfTracks.containsKey(entityId)) {
@@ -55,7 +55,7 @@ public final class TrackerTicker {
             }
         }
         for (ResourceLocation structureId : TracksManager.selfTracks.keySet()) {
-            if (Utils.Level.isPosInStructure(level, pos, structureId)) {
+            if (level instanceof ServerLevel sl && Utils.Level.isPosInStructure(sl, pos, structureId)) {
                 return structureId;
             }
         }
@@ -73,7 +73,7 @@ public final class TrackerTicker {
         return true;
     }
 
-    private Track getTrack(HashSet<Track> trackList, ServerLevel level){
+    private Track getTrack(HashSet<Track> trackList, Level level){
         var tl = trackList.stream().toList();
         return trackList.size() > 1 ? tl.get(level.random.nextInt(trackList.size())) : tl.get(0);
     }

@@ -15,7 +15,7 @@ public final class BiomeRulesFabric implements SimpleResourceReloadListener<Map<
 
     @Override
     public ResourceLocation getFabricId() {
-        return NullCore.defaultLoc("biome_rules");
+        return NullCore.path("biome_rules");
     }
 
     @Override

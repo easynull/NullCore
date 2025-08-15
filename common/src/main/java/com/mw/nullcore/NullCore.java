@@ -18,12 +18,12 @@ public final class NullCore {
 	public static final String ID = "nullcore";
 	public static final Logger LOG = LoggerFactory.getLogger("NullCore");
 
-	public static ResourceLocation defaultLoc(String id){
+	public static ResourceLocation path(String id){
 		return ResourceLocation.fromNamespaceAndPath(ID, id);
 	}
 
-	public static <T> ResourceKey<T> defaultKey(ResourceKey<? extends Registry<T>> key, String id) {
-		return ResourceKey.create(key, defaultLoc(id));
+	public static <T> ResourceKey<T> key(ResourceKey<? extends Registry<T>> key, String id) {
+		return ResourceKey.create(key, path(id));
 	}
 
 	public static void init() {

@@ -15,7 +15,7 @@ public final class NullEntities {
     public static final Supplier<EntityType<AdvancedItemEntity>> advancedItem = register("advanced_item", AdvancedItemEntity::new, MobCategory.MISC, 0.25F, 0.25F,0.2125F, 6, 20);
 
     private static <E extends Entity> Supplier<EntityType<E>> register(String id, EntityType.EntityFactory<E> factory, MobCategory category, float width, float height, float eyeHeight, int trackingRange, int updateInterval) {
-        return Platform.PLATFORM.register(BuiltInRegistries.ENTITY_TYPE, id, ()-> EntityType.Builder.of(factory, category).sized(width, height).eyeHeight(eyeHeight).clientTrackingRange(trackingRange).updateInterval(updateInterval).build(NullCore.defaultKey(Registries.ENTITY_TYPE, id)));
+        return Platform.PLATFORM.register(BuiltInRegistries.ENTITY_TYPE, id, ()-> EntityType.Builder.of(factory, category).sized(width, height).eyeHeight(eyeHeight).clientTrackingRange(trackingRange).updateInterval(updateInterval).build(NullCore.key(Registries.ENTITY_TYPE, id)));
     }
 
     public static void initialization(){

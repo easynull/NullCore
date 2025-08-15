@@ -17,7 +17,7 @@ public final class TracksFabric implements SimpleResourceReloadListener<Map<Reso
 
     @Override
     public ResourceLocation getFabricId() {
-        return NullCore.defaultLoc("tracks");
+        return NullCore.path("tracks");
     }
 
     @Override

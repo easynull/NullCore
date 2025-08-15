@@ -4,6 +4,7 @@ import com.mw.nullcore.Utils;
 import com.mw.nullcore.core.managers.BiomeRulesManager;
 import com.mw.nullcore.core.managers.TracksManager;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
@@ -17,10 +18,5 @@ public final class ServerEvents {
     private static void onResourceReload(AddServerReloadListenersEvent event) {
         event.addListener(ResourceLocation.fromNamespaceAndPath(ID, "biome_rules"), new BiomeRulesManager());
         event.addListener(ResourceLocation.fromNamespaceAndPath(ID, "tracks"), new TracksManager());
-    }
-
-    @SubscribeEvent
-    public static void tickServer(ServerTickEvent.Post event) {
-        Utils.Client.tickServer(event.getServer());
     }
 }

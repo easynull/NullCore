@@ -6,7 +6,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.client.audio.TrackerController;
+import com.mw.nullcore.core.managers.TracksManager;
+import com.mw.nullcore.platform.Platform;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -33,6 +36,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
@@ -55,6 +59,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import static com.mw.nullcore.NullCore.LOG;
+import static com.mw.nullcore.client.audio.TrackerController.ticker;
 
 public final class Utils {
     public static final @NotNull Minecraft mc = Minecraft.getInstance();
@@ -62,6 +67,10 @@ public final class Utils {
     public static final @NotNull Font font = mc.font;
     public static final float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
     public static int clientTick;
+
+    public static boolean isClient(){
+        return Platform.PLATFORM.isClient();
+    }
 
     public static final class Block {
         public static void forEachCube(BlockPos center, int radius, Consumer<BlockPos> action) {
@@ -177,12 +186,9 @@ public final class Utils {
 
         public static void tickClient() {
             if (!mc.isPaused()){
+                TrackerController.tick();
                 clientTick++;
             }
-        }
-
-        public static void tickServer(MinecraftServer server){
-            for(ServerPlayer player : server.getPlayerList().getPlayers()) TrackerController.tick(player);
         }
     }
 
@@ -416,10 +422,10 @@ public final class Utils {
             player.displayClientMessage(Component.translatable(key).withStyle(color), true);
         }
 
-        public static void addPositionTooltip(List<Component> tooltip, BlockPos pos, String translationKey, ChatFormatting color1, ChatFormatting color2) {
+        public static void addPositionTooltip(List<Component> tooltip, BlockPos pos, String key, ChatFormatting color1, ChatFormatting color2) {
             if (pos != null) {
-                tooltip.add(Component.translatable(translationKey).withStyle(ChatFormatting.YELLOW));
-                tooltip.add(Component.literal(String.format("X: %d, Y: %d, Z: %d", pos.getX(), pos.getY(), pos.getZ())).withStyle(ChatFormatting.GRAY));
+                tooltip.add(Component.translatable(key).withStyle(color1));
+                tooltip.add(Component.literal(String.format("X: %d, Y: %d, Z: %d", pos.getX(), pos.getY(), pos.getZ())).withStyle(color2));
             }
         }
     }
@@ -480,82 +486,6 @@ public final class Utils {
                 json.addProperty(key, (String) value);
             } else if (value instanceof Character) {
                 json.addProperty(key, (Character) value);
-            }
-        }
-
-        public interface NBTListHandler<T>{
-            void save(CompoundTag nbt, List<T> list, String key, HolderLookup.Provider provider);
-            List<T> load(CompoundTag nbt, String key, HolderLookup.Provider provider);
-
-            static <T> void saveList(CompoundTag nbt, String key, List<T> list, Function<T, CompoundTag> serializer) {
-                ListTag nbtList = new ListTag();
-                list.forEach(item -> nbtList.add(serializer.apply(item)));
-                nbt.put(key, nbtList);
-            }
-
-            static <T> List<T> loadList(CompoundTag nbt, String key, Function<CompoundTag, T> deserializer) {
-                List<T> result = new ArrayList<>();
-                if (nbt.contains(key, Tag.TAG_LIST)) {
-                    ListTag nbtList = nbt.getList(key, Tag.TAG_COMPOUND);
-                    nbtList.forEach(tag -> result.add(deserializer.apply((CompoundTag) tag)));
-                }
-                return result;
-            }
-
-            static NBTListHandler<BlockPos> getBlockPos(){
-                return new NBTListHandler<>() {
-                    @Override
-                    public void save(CompoundTag nbt, List<BlockPos> list, String key, HolderLookup.Provider provider) {
-                        saveList(nbt, key, list, pos -> {
-                            CompoundTag tag = new CompoundTag();
-                            tag.putInt("x", pos.getX());
-                            tag.putInt("y", pos.getY());
-                            tag.putInt("z", pos.getZ());
-                            return tag;
-                        });
-                    }
-
-                    @Override
-                    public List<BlockPos> load(CompoundTag nbt, String key, HolderLookup.Provider provider) {
-                        return loadList(nbt, key, tag -> new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z")));
-                    }
-                };
-            }
-
-            static NBTListHandler<String> getStrings(){
-                return new NBTListHandler<>() {
-                    @Override
-                    public void save(CompoundTag nbt, List<String> list, String key, HolderLookup.Provider provider) {
-                        saveList(nbt, key, list, str -> {
-                            CompoundTag tag = new CompoundTag();
-                            tag.putString("string", str);
-                            return tag;
-                        });
-                    }
-
-                    @Override
-                    public List<String> load(CompoundTag nbt, String key, HolderLookup.Provider provider) {
-                        return loadList(nbt, key, tag -> String.format(nbt.getString("string")));
-                    }
-                };
-            }
-
-            static NBTListHandler<UUID> getUUID(){
-                return new NBTListHandler<>() {
-                    @Override
-                    public void save(CompoundTag nbt, List<UUID> list, String key, HolderLookup.Provider provider) {
-                        saveList(nbt, key, list, uuid -> {
-                            CompoundTag tag = new CompoundTag();
-                            tag.putUUID("uuid", uuid);
-                            return tag;
-                        });
-                    }
-
-                    @Override
-                    public List<UUID> load(CompoundTag nbt, String key, HolderLookup.Provider provider) {
-                        return loadList(nbt, key, tag -> tag.getUUID("uuid"));
-                    }
-                };
             }
         }
     }

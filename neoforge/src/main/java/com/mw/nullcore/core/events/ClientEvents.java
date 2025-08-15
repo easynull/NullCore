@@ -3,6 +3,7 @@ package com.mw.nullcore.core.events;
 import com.mw.nullcore.NullCore;
 import com.mw.nullcore.Utils;
 import net.minecraft.client.Minecraft;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -10,12 +11,10 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 import static com.mw.nullcore.NullCore.ID;
 
-@EventBusSubscriber(modid = ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientEvents {
     public static void tickClient(ClientTickEvent.Post event) {
-        if (!Minecraft.getInstance().isPaused()){
-            Utils.clientTick++;
-        }
+        Utils.Client.tickClient();
     }
 
     @SubscribeEvent

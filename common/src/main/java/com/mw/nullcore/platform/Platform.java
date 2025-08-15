@@ -4,6 +4,8 @@ import java.util.ServiceLoader;
 import java.util.function.Supplier;
 
 import net.minecraft.core.Registry;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.entity.player.Player;
 
 public interface Platform {
     Platform PLATFORM = load(Platform.class);
@@ -11,6 +13,8 @@ public interface Platform {
     static <T> T load(Class<T> clazz) {
         return ServiceLoader.load(clazz).findFirst().orElseThrow(() -> new NullPointerException("Failed to load service for " + clazz.getName()));
     }
+
+    boolean isClient();
 
     String getPlatformName();
 
@@ -23,4 +27,6 @@ public interface Platform {
     }
 
     <T> Supplier<T> register(Registry<? super T> registry, String name, Supplier<T> value);
+
+    void sendTo(Player player, CustomPacketPayload packet);
 }
