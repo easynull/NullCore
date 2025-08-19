@@ -1,15 +1,5 @@
 package com.mw.nullcore.core.mixin;
 
-import com.mw.nullcore.Utils;
-import com.mw.nullcore.client.render.ShyStyle;
-import net.minecraft.network.chat.Style;
-import org.spongepowered.asm.mixin.Mixin;
-import net.minecraft.client.gui.Font.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
 //@Mixin(StringRenderOutput.class)
 //public final class FontRenderMixin {
 //    @Inject(method = "accept", at = @At("TAIL"))
