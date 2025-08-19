@@ -13,7 +13,6 @@
   ],
   "client": [
     "BiomeMixin",
-    "FontRenderMixin",
     "GuiGraphicsMixin",
     "LevelMixin",
     "SoundEngineMixin",
