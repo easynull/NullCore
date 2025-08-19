@@ -1,14 +1,10 @@
 package com.mw.nullcore.core.managers;
 
 import com.google.gson.*;
-import com.mw.nullcore.NullCore;
 import com.mw.nullcore.Utils;
-import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.Advancement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,9 +19,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -57,7 +50,7 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
     }
 
     @Override
-    public void apply(@NotNull Map<ResourceLocation, LockableEntry> allLockable, ResourceManager manager, ProfilerFiller profiler) {
+    public void apply(Map<ResourceLocation, LockableEntry> allLockable, ResourceManager manager, ProfilerFiller profiler) {
         selfLockable.clear();
         selfLockable.putAll(allLockable);
     }
@@ -170,6 +163,6 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
         }
     }
 
-    public record LockableEntry(boolean lock, @Nullable RequiredCondition required, @Nullable Component message, @Nullable SoundEvent soundMessage, @Nullable List<Item> ignoreItems) {}
+    public record LockableEntry(boolean lock, RequiredCondition required, Component message, SoundEvent soundMessage, List<Item> ignoreItems) {}
     public record RequiredCondition(ResourceLocation advancement) {}
 }
