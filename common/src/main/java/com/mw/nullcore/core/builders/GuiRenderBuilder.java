@@ -23,7 +23,7 @@ public final class GuiRenderBuilder {
 
     private GuiRenderBuilder(){}
 
-    public static GuiRenderBuilder create(){
+    public static GuiRenderBuilder builder(){
         return new GuiRenderBuilder();
     }
 

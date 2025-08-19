@@ -3,7 +3,7 @@ package com.mw.nullcore.core.mixin;
 import com.mw.nullcore.client.screen.ScreenHave;
 import com.mw.nullcore.core.items.CustomableName;
 import com.mw.nullcore.core.multiblocks.Blueprint;
-import com.mw.nullcore.core.multiblocks.OuterMultiblock;
+import com.mw.nullcore.core.holders.OuterMultiblock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;

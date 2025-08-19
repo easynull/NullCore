@@ -2,7 +2,7 @@ package com.mw.nullcore.core.entities;
 
 import com.mojang.datafixers.util.Pair;
 import com.mw.nullcore.Utils;
-import com.mw.nullcore.core.NullEntities;
+import com.mw.nullcore.registers.NullEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -16,22 +16,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-public final class AdvancedItemEntity extends ItemEntity {
-    static final EntityDataAccessor<Boolean> canRays = SynchedEntityData.defineId(AdvancedItemEntity.class, EntityDataSerializers.BOOLEAN), canParticle = SynchedEntityData.defineId(AdvancedItemEntity.class, EntityDataSerializers.BOOLEAN);
-    static final EntityDataAccessor<Integer> color = SynchedEntityData.defineId(AdvancedItemEntity.class, EntityDataSerializers.INT), countParticle = SynchedEntityData.defineId(AdvancedItemEntity.class, EntityDataSerializers.INT);
-    static final EntityDataAccessor<ParticleOptions> particle = SynchedEntityData.defineId(AdvancedItemEntity.class, EntityDataSerializers.PARTICLE);
+public final class ShyItemEntity extends ItemEntity {
+    static final EntityDataAccessor<Boolean> canRays = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.BOOLEAN), canParticle = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.BOOLEAN);
+    static final EntityDataAccessor<Integer> color = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.INT), countParticle = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.INT);
+    static final EntityDataAccessor<ParticleOptions> particle = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.PARTICLE);
 
-    public AdvancedItemEntity(EntityType<AdvancedItemEntity> entityType, Level level) {
+    public ShyItemEntity(EntityType<ShyItemEntity> entityType, Level level) {
         super(entityType, level);
     }
 
-    public AdvancedItemEntity(Level level, float pX, float pY, float pZ, ItemStack stack) {
-        this(NullEntities.advancedItem.get(), level);
+    public ShyItemEntity(Level level, float pX, float pY, float pZ, ItemStack stack) {
+        this(NullEntities.shyItem.get(), level);
         setPos(pX, pY, pZ);
         setItem(stack);
     }
 
-    public AdvancedItemEntity(Level level, BlockPos pos, ItemStack stack, boolean upBlock) {
+    public ShyItemEntity(Level level, BlockPos pos, ItemStack stack, boolean upBlock) {
         this(level, pos.getX() + 0.5f, pos.getY() + (upBlock ? 1.5f : 0.5f), pos.getZ() + 0.5f, stack);
     }
 
@@ -45,16 +45,16 @@ public final class AdvancedItemEntity extends ItemEntity {
         }
     }
 
-    public AdvancedItemEntity setParticle(boolean enabled, ParticleOptions particle, int count) {
+    public ShyItemEntity setParticle(boolean enabled, ParticleOptions particle, int count) {
         entityData.set(canParticle, enabled);
-        entityData.set(AdvancedItemEntity.particle, particle != null ? particle : ParticleTypes.EFFECT);
+        entityData.set(ShyItemEntity.particle, particle != null ? particle : ParticleTypes.EFFECT);
         entityData.set(countParticle, count);
         return this;
     }
 
-    public AdvancedItemEntity setRays(boolean enabled, int color) {
+    public ShyItemEntity setRays(boolean enabled, int color) {
         entityData.set(canRays, enabled);
-        entityData.set(AdvancedItemEntity.color, color);
+        entityData.set(ShyItemEntity.color, color);
         return this;
     }
 
@@ -64,6 +64,10 @@ public final class AdvancedItemEntity extends ItemEntity {
 
     public ParticleOptions getParticle() {
         return entityData.get(particle);
+    }
+
+    public void spawn(){
+        level().addFreshEntity(this);
     }
 
     @Override

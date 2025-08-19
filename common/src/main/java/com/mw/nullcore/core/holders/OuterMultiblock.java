@@ -1,5 +1,6 @@
-package com.mw.nullcore.core.multiblocks;
+package com.mw.nullcore.core.holders;
 
+import com.mw.nullcore.core.multiblocks.Blueprint;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
@@ -21,5 +22,9 @@ public final class OuterMultiblock {
     public <B extends Blueprint> B registerMultiblock(String name, Supplier<B> multiblock) {
         multiblocks.put(ResourceLocation.fromNamespaceAndPath(id, name), multiblock.get());
         return multiblock.get();
+    }
+
+    public <B extends Blueprint> B get(ResourceLocation location) {
+        return (B) multiblocks.get(location);
     }
 }

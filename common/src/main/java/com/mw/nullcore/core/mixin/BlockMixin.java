@@ -1,6 +1,6 @@
 package com.mw.nullcore.core.mixin;
 
-import com.mw.nullcore.core.NullComponents;
+import com.mw.nullcore.registers.NullComponents;
 import com.mw.nullcore.core.blocks.SaveDataBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;

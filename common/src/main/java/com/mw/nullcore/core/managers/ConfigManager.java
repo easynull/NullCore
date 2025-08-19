@@ -13,8 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.mw.nullcore.Utils.Data.addValueToJson;
-import static com.mw.nullcore.Utils.Data.parseJsonValue;
+import static com.mw.nullcore.Utils.Reader.addValueToJson;
+import static com.mw.nullcore.Utils.Reader.parseJsonValue;
 
 public final class ConfigManager {
     private static Initialize INSTANCE;

@@ -1,7 +1,7 @@
 package com.mw.nullcore.core.mixin;
 
 import com.mw.nullcore.client.screen.ScreenHave;
-import com.mw.nullcore.core.NullComponents;
+import com.mw.nullcore.registers.NullComponents;
 import com.mw.nullcore.core.blocks.MenuHave;
 import com.mw.nullcore.core.blocks.SaveDataBlock;
 import com.mw.nullcore.core.blocks.type.ContainerHave;

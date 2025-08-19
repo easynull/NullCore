@@ -2,7 +2,6 @@ package com.mw.nullcore.core.events;
 
 import com.mw.nullcore.NullCore;
 import com.mw.nullcore.Utils;
-import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

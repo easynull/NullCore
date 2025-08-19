@@ -1,8 +1,8 @@
 package com.mw.nullcore;
 
-import com.mw.nullcore.client.render.AdvancedItemRender;
-import com.mw.nullcore.core.NullComponents;
-import com.mw.nullcore.core.NullEntities;
+import com.mw.nullcore.client.render.ShyItemRender;
+import com.mw.nullcore.registers.NullComponents;
+import com.mw.nullcore.registers.NullEntities;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -32,6 +32,6 @@ public final class NullCore {
 	}
 
 	public static void registerEntityRenderers(BiConsumer<EntityType<? extends Entity>, EntityRendererProvider> consumer) {
-		consumer.accept(NullEntities.advancedItem.get(), AdvancedItemRender::new);
+		consumer.accept(NullEntities.shyItem.get(), ShyItemRender::new);
 	}
 }

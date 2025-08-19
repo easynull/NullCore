@@ -1,4 +1,4 @@
-package com.mw.nullcore.core;
+package com.mw.nullcore.registers;
 
 import com.mw.nullcore.NullCore;
 import com.mw.nullcore.platform.Platform;

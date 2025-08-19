@@ -1,7 +1,7 @@
 package com.mw.nullcore.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mw.nullcore.core.entities.AdvancedItemEntity;
+import com.mw.nullcore.core.entities.ShyItemEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -13,15 +13,15 @@ import org.jetbrains.annotations.NotNull;
 
 import static com.mw.nullcore.Utils.Render.renderRays;
 
-public final class AdvancedItemRender extends ItemEntityRenderer {
+public final class ShyItemRender extends ItemEntityRenderer {
 
-    public AdvancedItemRender(EntityRendererProvider.Context context) {
+    public ShyItemRender(EntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
     public void extractRenderState(ItemEntity entity, ItemEntityRenderState state, float pTick) {
-        if(state instanceof AdvancedItemState aState && entity instanceof AdvancedItemEntity aEntity){
+        if(state instanceof ShyItemState aState && entity instanceof ShyItemEntity aEntity){
             aState.raysEnabled = aEntity.getRays().getFirst();
             aState.color = aEntity.getRays().getSecond();
             aState.pTick = pTick;
@@ -32,7 +32,7 @@ public final class AdvancedItemRender extends ItemEntityRenderer {
     @Override
     public void render(ItemEntityRenderState state, PoseStack ps, MultiBufferSource mBuffer, int light) {
         super.render(state, ps, mBuffer, light);
-        if(state instanceof AdvancedItemState aState && !state.item.isEmpty()) {
+        if(state instanceof ShyItemState aState && !state.item.isEmpty()) {
             if (aState.raysEnabled) {
                 float yOffset = Mth.sin(state.ageInTicks / 10.0F + state.bobOffset) * 0.1F + 0.1F;
                 float speed = state.item.transform().scale.y();
@@ -46,10 +46,10 @@ public final class AdvancedItemRender extends ItemEntityRenderer {
 
     @Override
     public @NotNull ItemEntityRenderState createRenderState() {
-        return new AdvancedItemState();
+        return new ShyItemState();
     }
 
-    public static class AdvancedItemState extends ItemEntityRenderState {
+    public static class ShyItemState extends ItemEntityRenderState {
         public boolean raysEnabled;
         public int color;
         public float pTick;

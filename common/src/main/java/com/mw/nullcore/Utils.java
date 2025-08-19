@@ -6,11 +6,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.client.audio.TrackerController;
-import com.mw.nullcore.core.managers.TracksManager;
+import com.mw.nullcore.core.blocks.type.ContainerBlockEntity;
+import com.mw.nullcore.core.entities.ShyItemEntity;
 import com.mw.nullcore.platform.Platform;
-import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -22,23 +22,19 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.FillBiomeCommand;
-import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -50,16 +46,12 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import static com.mw.nullcore.NullCore.LOG;
-import static com.mw.nullcore.client.audio.TrackerController.ticker;
 
 public final class Utils {
     public static final @NotNull Minecraft mc = Minecraft.getInstance();
@@ -79,23 +71,12 @@ public final class Utils {
 
         public static void forEachSphere(BlockPos center, int radius, Consumer<BlockPos> action) {
             int radiusSq = radius * radius;
-            forEachInVolume(center, radius, radius, radius,
-                    pos -> {
-                        int dx = pos.getX() - center.getX();
-                        int dy = pos.getY() - center.getY();
-                        int dz = pos.getZ() - center.getZ();
-                        return dx * dx + dy * dy + dz * dz <= radiusSq;
-                    },
-                    action);
+            forEachInVolume(center, radius, radius, radius, pos -> {int dx = pos.getX() - center.getX();int dy = pos.getY() - center.getY();int dz = pos.getZ() - center.getZ();return dx * dx + dy * dy + dz * dz <= radiusSq;}, action);
         }
 
         public static void forEachCircle(BlockPos center, int radius, int height, Consumer<BlockPos> action) {
             int radiusSq = radius * radius;
-            forEachInVolume(center, radius, height, radius, pos -> {
-                int dx = pos.getX() - center.getX();
-                int dz = pos.getZ() - center.getZ();
-                return dx * dx + dz * dz <= radiusSq;
-            }, action);
+            forEachInVolume(center, radius, height, radius, pos -> {int dx = pos.getX() - center.getX();int dz = pos.getZ() - center.getZ();return dx * dx + dz * dz <= radiusSq;}, action);
         }
 
         public static void forEachDiamond(BlockPos center, int radius, int height, Consumer<BlockPos> action) {
@@ -159,6 +140,67 @@ public final class Utils {
         }
     }
 
+    public static final class Item{
+        public static NonNullList<ItemStack> inventoryToList(Container inv) {
+            NonNullList<ItemStack> list = NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                list.set(i, inv.getItem(i).copy());
+            }
+            return list;
+        }
+
+        public static boolean insertItem(ContainerBlockEntity be, Player player, int slot, int maxTransfer) {
+            SimpleContainer inventory = be.getInventory();
+            ItemStack slotStack = inventory.getItem(slot);
+            ItemStack heldStack = player.getMainHandItem();
+
+            int actualMax = Math.min(maxTransfer, be.maxInSlot);
+
+            if (heldStack.isEmpty()) {
+                if (!slotStack.isEmpty()) {
+                    int transferAmount = Math.min(slotStack.getCount(), actualMax);
+
+                    ItemStack toGive = slotStack.copy();
+                    toGive.setCount(transferAmount);
+                    if(!player.level().isClientSide()) {
+                        ShyItemEntity entity = new ShyItemEntity(player.level(), player.getOnPos(), toGive, false);
+                        entity.spawn();
+                    }
+                    slotStack.shrink(transferAmount);
+
+                    if (slotStack.isEmpty()) {
+                        inventory.setItem(slot, ItemStack.EMPTY);
+                    } else {
+                        inventory.setItem(slot, slotStack);
+                    }
+                    return true;
+                }
+            } else {
+                if (slotStack.isEmpty()) {
+                    int transferAmount = Math.min(heldStack.getCount(), actualMax);
+
+                    ItemStack toInsert = heldStack.copy();
+                    toInsert.setCount(transferAmount);
+
+                    inventory.setItem(slot, toInsert);
+                    heldStack.shrink(transferAmount);
+                    return true;
+                } else if (ItemStack.isSameItem(slotStack, heldStack)) {
+                    int spaceAvailable = Math.min(be.maxInSlot, slotStack.getMaxStackSize()) - slotStack.getCount();
+                    int transferAmount = Math.min(Math.min(heldStack.getCount(), spaceAvailable), actualMax);
+
+                    if (transferAmount > 0) {
+                        slotStack.grow(transferAmount);
+                        heldStack.shrink(transferAmount);
+                        inventory.setItem(slot, slotStack);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
     public static final class Client {
         public static void setSafeScreen(Screen screen) {
             try {
@@ -174,21 +216,16 @@ public final class Utils {
             }
         }
 
-        public static void sendPacketDispatch(BlockEntity be) {
-            if (be.getLevel() instanceof ServerLevel) {
-                Packet<?> packet = be.getUpdatePacket();
-                if (packet != null) {
-                    BlockPos pos = be.getBlockPos();
-                    ((ServerChunkCache) be.getLevel().getChunkSource()).chunkMap.getPlayers(new ChunkPos(pos), false).forEach(e -> e.connection.send(packet));
-                }
-            }
-        }
-
         public static void tickClient() {
             if (!mc.isPaused()){
                 TrackerController.tick();
                 clientTick++;
             }
+        }
+
+        public static boolean checkAdvancement(ServerPlayer player, ResourceLocation id) {
+            AdvancementHolder advancement = player.server.getAdvancements().get(id);
+            return advancement != null && player.getAdvancements().getOrStartProgress(advancement).isDone();
         }
     }
 
@@ -213,6 +250,16 @@ public final class Utils {
             return asARGB ? ((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255) : ((int)(r * 255) << 24) | ((int)(g * 255) << 16) | ((int)(b * 255) << 8) | (int)(a * 255);
         }
 
+        public static int hexPack(String hexColor) {
+            if (hexColor.startsWith("#")) {
+                hexColor = hexColor.substring(1);
+            }
+            if (hexColor.length() == 6) {
+                hexColor = "FF" + hexColor;
+            }
+            return (int) Long.parseLong(hexColor, 16);
+        }
+
         public static int lerpColors(float progress, int... colors) {
             float segment = progress * (colors.length - 1);
             int index = (int)segment;
@@ -226,18 +273,12 @@ public final class Utils {
             float[] c1 = unpack(colors[index], false);
             float[] c2 = unpack(colors[index + 1], false);
 
-            return pack(
-                    net.minecraft.util.Mth.lerp(factor, c1[0], c2[0]),
-                    net.minecraft.util.Mth.lerp(factor, c1[1], c2[1]),
-                    net.minecraft.util.Mth.lerp(factor, c1[2], c2[2]),
-                    net.minecraft.util.Mth.lerp(factor, c1[3], c2[3]),
-                    false
-            );
+            return pack(net.minecraft.util.Mth.lerp(factor, c1[0], c2[0]), net.minecraft.util.Mth.lerp(factor, c1[1], c2[1]), net.minecraft.util.Mth.lerp(factor, c1[2], c2[2]), net.minecraft.util.Mth.lerp(factor, c1[3], c2[3]), false);
         }
 
-        public static int getCyclingColor(int[] palette, float speed) {
-            float time = (clientTick + partialTick) * speed;
-            return lerpColors((net.minecraft.util.Mth.sin(time) + 1) / 2, palette);
+        public static int getCyclingColor(float speed, int... colors) {
+            float time = Render.getAnimationTick() * speed;
+            return lerpColors((net.minecraft.util.Mth.sin(time) + 1) / 2, colors);
         }
 
         public static int getRainbow(float speed) {
@@ -245,20 +286,13 @@ public final class Utils {
             for (int i = 0; i < rainbow.length; i++) {
                 rainbow[i] = java.awt.Color.HSBtoRGB(i / 36f, 1f, 1f) & 0xFFFFFF;
             }
-            return getCyclingColor(rainbow, speed);
+            return getCyclingColor(speed, rainbow);
         }
     }
 
     public static final class Mth {
         public static boolean chance(float chance) {
             return rand.nextFloat() < net.minecraft.util.Mth.clamp(chance, 0, (byte)1);
-        }
-
-        public static float normalAngle(float angle) {
-            angle %= 360.0F;
-            if (angle > 180.0F) angle -= 360.0F;
-            if (angle < -180.0F) angle += 360.0F;
-            return angle;
         }
 
         public static String formatRealTime(long gameTime) {
@@ -307,7 +341,7 @@ public final class Utils {
         }
 
         public static void drawTexture(GuiGraphics gg, ResourceLocation texture, int x, int y, int u, int v, int pixelWidth, int pixelHeight, int width, int height) {
-            drawTexture(gg, texture, x, y, u, v, pixelWidth, pixelHeight, width, height, 0);
+            drawTexture(gg, texture, x, y, u, v, pixelWidth, pixelHeight, width, height, 0xFFFFFFFF);
         }
 
         public static void drawLine(PoseStack ps, VertexConsumer buffer, float x1, float y1, float z1, float x2, float y2, float z2, int color, float width) {
@@ -418,14 +452,20 @@ public final class Utils {
             return component;
         }
 
-        public static void sendMessage(Player player, String key, ChatFormatting color) {
-            player.displayClientMessage(Component.translatable(key).withStyle(color), true);
+        public static Component addGradientText(Component text, float time, int... colors) {
+            return addGradientText(text.getString(), time, colors);
         }
 
-        public static void addPositionTooltip(List<Component> tooltip, BlockPos pos, String key, ChatFormatting color1, ChatFormatting color2) {
+        public static void sendMessage(Player player, Component key) {
+            if (key != null) {
+                player.displayClientMessage(key, true);
+            }
+        }
+
+        public static void addPositionTooltip(List<Component> tooltip, BlockPos pos, Component key, int colorPos, int colorData) {
             if (pos != null) {
-                tooltip.add(Component.translatable(key).withStyle(color1));
-                tooltip.add(Component.literal(String.format("X: %d, Y: %d, Z: %d", pos.getX(), pos.getY(), pos.getZ())).withStyle(color2));
+                tooltip.add(key.copy().withColor(colorPos));
+                tooltip.add(Component.literal(String.format("X: %d, Y: %d, Z: %d", pos.getX(), pos.getY(), pos.getZ())).withColor(colorData));
             }
         }
     }
@@ -452,11 +492,12 @@ public final class Utils {
             return level.structureManager().getAllStructuresAt(pos).keySet().stream().map(structureRegistry::getKey).filter(Objects::nonNull).toList();
         }
 
-        public static boolean isPosInStructure(ServerLevel level, BlockPos pos, ResourceLocation structureId) {
-            Registry<Structure> registry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+        public static boolean isPosInStructure(net.minecraft.world.level.Level level, BlockPos pos, ResourceLocation structureId) {
+            if (!(level instanceof ServerLevel sl)) return false;
+            Registry<Structure> registry = sl.registryAccess().lookupOrThrow(Registries.STRUCTURE);
             Structure structure = registry.getValue(structureId);
             if (structure == null) return false;
-            return level.structureManager().getStructureAt(pos, structure).isValid();
+            return sl.structureManager().getStructureAt(pos, structure).isValid();
         }
 
         public static List<Entity> getEntities(net.minecraft.world.level.Level level, BlockPos startPos, double radius) {
@@ -464,7 +505,7 @@ public final class Utils {
         }
     }
 
-    public static final class Data {
+    public static final class Reader {
         public static Object parseJsonValue(JsonElement element, Object defaultValue) {
             if (defaultValue instanceof Boolean) return element.getAsBoolean();
             if (defaultValue instanceof Integer) return element.getAsInt();

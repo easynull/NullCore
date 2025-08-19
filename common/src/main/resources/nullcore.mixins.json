@@ -7,13 +7,15 @@
   "mixins": [
     "BlockBehaviourMixin",
     "BlockMixin",
+    "GameModeMixin",
     "ItemMixin",
     "MobMixin"
   ],
   "client": [
-    "LevelMixin",
     "BiomeMixin",
+    "FontRenderMixin",
     "GuiGraphicsMixin",
+    "LevelMixin",
     "SoundEngineMixin",
     "SoundManagerAccessor"
   ],

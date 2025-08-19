@@ -29,7 +29,7 @@ public final class TracksManager extends SimplePreparableReloadListener<Map<Reso
         for (Map.Entry<ResourceLocation, Resource> entry : resources.entrySet()) {
             try (InputStream stream = entry.getValue().open()) {
                 String jsonContent = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-                Map<ResourceLocation, HashSet<Track>> parsedTracks = parseTracksJson(jsonContent);
+                Map<ResourceLocation, HashSet<Track>> parsedTracks = parseTracks(jsonContent);
 
                 parsedTracks.forEach((id, tracks) -> allTracks.merge(id, tracks, (oldTracks, newTracks) -> {
                     HashSet<Track> merged = new HashSet<>(oldTracks);
@@ -49,7 +49,7 @@ public final class TracksManager extends SimplePreparableReloadListener<Map<Reso
         selfTracks.putAll(allTracks);
     }
 
-    public static Map<ResourceLocation, HashSet<Track>> parseTracksJson(String json) {
+    public static Map<ResourceLocation, HashSet<Track>> parseTracks(String json) {
         Map<ResourceLocation, HashSet<Track>> tracks = new HashMap<>();
         try {
             JsonObject root = JsonParser.parseString(json).getAsJsonObject();
@@ -65,18 +65,18 @@ public final class TracksManager extends SimplePreparableReloadListener<Map<Reso
                     tracks.put(id, selfTracks);
                 }
             }
-            if (root.has("structures")) {
-                JsonObject structures = root.getAsJsonObject("structures");
-                for (Map.Entry<String, JsonElement> entry : structures.entrySet()) {
-                    ResourceLocation id = ResourceLocation.tryParse(entry.getKey());
-                    if (id == null) {
-                        LOG.warn("Invalid structure ID: {}", entry.getKey());
-                        continue;
-                    }
-                    HashSet<Track> selfTracks = parseTrackList(entry.getValue().getAsJsonArray());
-                    tracks.put(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath()), selfTracks);
-                }
-            }
+//            if (root.has("structures")) {
+//                JsonObject structures = root.getAsJsonObject("structures");
+//                for (Map.Entry<String, JsonElement> entry : structures.entrySet()) {
+//                    ResourceLocation id = ResourceLocation.tryParse(entry.getKey());
+//                    if (id == null) {
+//                        LOG.warn("Invalid structure ID: {}", entry.getKey());
+//                        continue;
+//                    }
+//                    HashSet<Track> selfLockable = parseTrackList(entry.getValue().getAsJsonArray());
+//                    tracks.put(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath()), selfLockable);
+//                }
+//            }
             if (root.has("mobs")) {
                 JsonObject structures = root.getAsJsonObject("mobs");
                 for (Map.Entry<String, JsonElement> entry : structures.entrySet()) {

@@ -12,47 +12,43 @@ import java.util.function.Consumer;
 
 public final class CommandBuilder {
     private static final List<Consumer<CommandDispatcher<CommandSourceStack>>> commands = new ArrayList<>();
+    private final List<LiteralArgumentBuilder<CommandSourceStack>> arguments = new ArrayList<>();
+    private int permission = 2;
+    private String id;
 
-    //TODO: NullCore registers commands itself
+    public static CommandBuilder builder() {
+        return new CommandBuilder();
+    }
+
+    public CommandBuilder command(String id) {
+        this.id = id;
+        return this;
+    }
+
+    public CommandBuilder requires(int permissionLevel) {
+        this.permission = permissionLevel;
+        return this;
+    }
+
+    public CommandBuilder then(LiteralArgumentBuilder<CommandSourceStack> argument) {
+        this.arguments.add(argument);
+        return this;
+    }
+
+    public CommandBuilder executes(CommandExecutor executor) {
+        LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal(id).requires(src -> src.hasPermission(permission)).executes(executor::execute);
+        arguments.forEach(cmd::then);
+        return this;
+    }
+
+    public CommandBuilder create(CommandExecutor executor) {
+        LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal(id).requires(src -> src.hasPermission(permission)).executes(executor::execute);
+        commands.add(dispatcher -> dispatcher.register(cmd));
+        return this;
+    }
+
     public static void registers(CommandDispatcher dispatcher) {
         commands.forEach(consumer -> consumer.accept(dispatcher));
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public final static class Builder {
-        private final List<LiteralArgumentBuilder<CommandSourceStack>> arguments = new ArrayList<>();
-        private int permission = 2;
-        private String id;
-
-        public Builder command(String id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder requires(int permissionLevel) {
-            this.permission = permissionLevel;
-            return this;
-        }
-
-        public Builder then(LiteralArgumentBuilder<CommandSourceStack> argument) {
-            this.arguments.add(argument);
-            return this;
-        }
-
-        public Builder executes(CommandExecutor executor) {
-            LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal(id).requires(src -> src.hasPermission(permission)).executes(executor::execute);
-            arguments.forEach(cmd::then);
-            return this;
-        }
-
-        public Builder create(CommandExecutor executor) {
-            LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal(id).requires(src -> src.hasPermission(permission)).executes(executor::execute);
-            commands.add(dispatcher -> dispatcher.register(cmd));
-            return this;
-        }
     }
 
     @FunctionalInterface

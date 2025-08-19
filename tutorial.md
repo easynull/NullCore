@@ -18,19 +18,6 @@
 > }
 > ```
 >
->>Set music for specific structures:
-> ```json
-> "structures": {
->   "minecraft:ancient_city": [
->     {
->       "sound": "modid:music.goida", //resourse location SoundEvent
->       "min_delay": 600, //min tick before the start
->       "max_delay": 1200 //max tick before the start
->     }
->   ]
-> }
-> ```
->
 >>Set music for specific mobs:
 > ```json
 > "mobs": {
@@ -48,16 +35,36 @@
 ## **🌍 File ```biome_rules.json``` - biome settings**
 >#### Here you can manipulate [all registered biome rules](https://github.com/easynull/NullCore/blob/1.21.4-neoforge/src/main/java/com/mw/nullcore/data/BiomeRulesManager.java#L25):
 > ```json
+>   {
+>     "minecraft:desert": {
+>       "fixed_time": 18000, //max = 24000
+>       "has_precipitation": true //Enable if you want snow/rain particles to be rendered within your biome.
+>     },
+>     "minecraft:jungle": {
+>       "rain_force": 0.8 //Rain > 0.2; thunder > 0.9; max = 1
+>     }
+>   }
+> ```
+> Move json to path **data/modid/level/biome_rules.json**
+
+## **🌍 File ```lockable.json``` - lockable settings**
+>#### Here you can block a biome/structure with conditions:
+> ```json
 > {
->   "minecraft:desert": {
->     "fixed_time": 18000, //max = 24000
->     "has_precipitation": true //Enable if you want snow/rain particles to be rendered within your biome.
+> "minecraft:desert_pyramid": { //ResourceLocation biome/structure
+>   "lock": true, //An optional parameter. If true, the region is blocked, but required no longer functions.
+>   "required": { //An optional parameter. That specifies the condition under which the region can be interacted with.
+>     "advancement": "minecraft:adventure/trade"
 >   },
->   "minecraft:jungle": {
->     "rain_force": 0.8 //Rain > 0.2; thunder > 0.9; max = 1
+>   "message": { //An optional parameter. Message when trying to change a blocked region
+>     "text": "lock.mymod.pyramid",
+>     "color": "#FF5733" // There is support for both HEX and INT Color
+>   },
+>     "sound_message": "minecraft:entity.villager.no", //An optional parameter. Sound when trying to change a blocked region
+>     "ignore": ["minecraft:golden_pickaxe", "minecraft:iron_pickaxe"] //An optional parameter. Table of exceptions that can be used in a blocked region
 >   }
 > }
 > ```
-> Move json to path **data/modid/level/biome_rules.json**
+> Move json to path **data/modid/level/lockable.json**
 
 >### I hope these functions will be very useful to use, without any bugs :)
