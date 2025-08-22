@@ -47,10 +47,10 @@ public final class ItemMixin {
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void nc$use(Level level, Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         Item item = (Item) ((Object) this);
-        if(item instanceof ScreenHave s && s.canOpen(level, player, player.getItemInHand(hand))){
+        if (item instanceof ScreenHave s && s.canOpen(level, player, player.getItemInHand(hand))) {
             setSafeScreen(s.getScreen(level, player));
             cir.setReturnValue(InteractionResult.SUCCESS);
-        } else if (item instanceof MenuProvider m){
+        } else if (item instanceof MenuProvider m) {
             player.openMenu(m);
             cir.setReturnValue(InteractionResult.SUCCESS);
         }

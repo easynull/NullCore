@@ -18,7 +18,7 @@ import java.util.Optional;
 public final class MobMixin {
     @Inject(method = "isSunBurnTick", at = @At("HEAD"), cancellable = true)
     private void nc$isSunBurnTick(CallbackInfoReturnable<Boolean> cir) {
-        Mob mob = (Mob)(Object)this;
+        Mob mob = (Mob) (Object) this;
         Level level = mob.level();
         Holder<Biome> biome = level.getBiome(mob.blockPosition());
         ResourceLocation id = biome.unwrapKey().map(ResourceKey::location).orElse(null);

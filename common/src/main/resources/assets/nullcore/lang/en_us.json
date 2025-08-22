@@ -1,3 +1,5 @@
 {
-  "tooltip.nullcore.info": "Hold %s for details"
+  "tooltip.nullcore.info": "Hold %s for details",
+  "tooltip.nullcore.suitinfo1": "With full set: ",
+  "tooltip.nullcore.suitinfo2": "When worn: "
 }

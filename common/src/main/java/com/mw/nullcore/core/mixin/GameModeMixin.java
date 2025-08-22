@@ -24,7 +24,8 @@ public final class GameModeMixin {
     @Shadow
     private ServerLevel level;
 
-    @Shadow @Final
+    @Shadow
+    @Final
     private ServerPlayer player;
 
     @Inject(method = "destroyBlock", at = @At("HEAD"), cancellable = true)

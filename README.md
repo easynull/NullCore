@@ -15,14 +15,16 @@
 ></p>
 # **Features**
 
->#### **- More ```Utils``` for you**
->#### **- Supported ```Multiblocks```**
->#### **- Manipulations with ```Item Entity```**
->#### **- Simplified ```Rendering system``` ~~(currently beta)~~**
->#### **- Simplified work with ```Blocks``` in different directions**
->#### **- Manipulations with ```Item``` rendering in ```Gui```**
->#### **- Add your `track` to dungeons, dimensions or mobs via `json`**
->#### **- Adjust ```biome rules``` via ```json```**
+>#### **- More `utils` for you**
+>#### **- Supported `multiblocks`**
+>#### **- Manipulations with `item entity`**
+>#### **- Simplified `rendering system`**
+>#### **- Simplified work with `blocks` in different directions**
+>#### **- Manipulations with `item` rendering in `gui`**
+>#### **- Add ambient to your world/mob via `tracks.json`**
+>#### **- Manage different beam rules with `biome_rules.json`**
+>#### **- Lock a biome/structure with json `lockable.json`**
+>#### **- Easy creation of `armor material` with effects**
 >#### **- Opening the `screen` with `blocks` and `items`**
 # **Licensing**
 

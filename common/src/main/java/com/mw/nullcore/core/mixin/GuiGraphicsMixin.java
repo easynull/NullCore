@@ -18,10 +18,10 @@ public final class GuiGraphicsMixin {
     @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;IIII)V", at = @At(value = "TAIL"))
     private void nc$renderItem(LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset, CallbackInfo ci) {
         GuiGraphics gg = (GuiGraphics) ((Object) this);
-        if(!NullConfig.enableGuiVFX.get()) return;
+        if (!NullConfig.enableGuiVFX.get()) return;
         if (stack.getItem() instanceof GuiRenderer item) {
             item.renderInGui(gg, level, stack, pX, pY, Utils.partialTick);
-        } else if(stack.getItem() instanceof BlockItem bi && bi instanceof GuiRenderer item){
+        } else if (stack.getItem() instanceof BlockItem bi && bi instanceof GuiRenderer item) {
             item.renderInGui(gg, level, stack, pX, pY, Utils.partialTick);
         }
     }

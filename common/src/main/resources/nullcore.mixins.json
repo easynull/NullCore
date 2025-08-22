@@ -5,20 +5,22 @@
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AbstractContainerMenuMixin",
     "BlockBehaviourMixin",
     "BlockMixin",
     "GameModeMixin",
     "ItemMixin",
-    "MobMixin"
+    "MobMixin",
+    "PlayerMixin"
   ],
   "client": [
     "BiomeMixin",
+    "CameraMixin",
     "GuiGraphicsMixin",
     "LevelMixin",
     "SoundEngineMixin",
     "SoundManagerAccessor"
   ],
-  "server": [],
   "injectors": {
     "defaultRequire": 1
   }

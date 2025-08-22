@@ -1,3 +1,5 @@
 {
-  "tooltip.nullcore.info": "Зажмите %s для подробной информации"
+  "tooltip.nullcore.info": "Зажмите %s для подробной информации",
+  "tooltip.nullcore.suitinfo1": "При полном комплекте: ",
+  "tooltip.nullcore.suitinfo2": "Когда надето: "
 }

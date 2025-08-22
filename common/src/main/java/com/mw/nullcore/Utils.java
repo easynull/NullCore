@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mw.nullcore.client.audio.TrackerController;
 import com.mw.nullcore.core.blocks.type.ContainerBlockEntity;
+import com.mw.nullcore.core.builders.ArmorMaterialBuilder;
 import com.mw.nullcore.core.entities.ShyItemEntity;
 import com.mw.nullcore.platform.Platform;
 import net.minecraft.advancements.AdvancementHolder;
@@ -32,6 +33,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -302,6 +304,33 @@ public final class Utils {
             long seconds = totalSeconds % 60;
             return String.format("%02d:%02d:%02d", hours, minutes, seconds);
         }
+
+        public static float perlinNoise(float x, float y, float z, float frequency, float amplitude) {
+            float noise = 0;
+            for (int i = 0; i < 3; i++) {
+                noise += (float) (Math.sin(x * frequency) * Math.cos(y * frequency) * (z != 0 ? Math.sin(z * frequency) : 1) * amplitude);
+                frequency *= 2.0f;
+                amplitude *= 0.4f;
+            }
+
+            return noise;
+        }
+
+        public static int secondTick(int seconds) {
+           return seconds * 20;
+        }
+
+        public static int minuteTick(int minutes) {
+            return secondTick(minutes * 60);
+        }
+
+        public static int hourTick(int hours) {
+            return minuteTick(hours * 60);
+        }
+
+        public static int dayTick(int days) {
+            return hourTick(days * 24);
+        }
     }
 
     public static final class Particle {
@@ -468,6 +497,20 @@ public final class Utils {
                 tooltip.add(Component.literal(String.format("X: %d, Y: %d, Z: %d", pos.getX(), pos.getY(), pos.getZ())).withColor(colorData));
             }
         }
+
+        public static void addTooltipEffects(List<Component> tooltip, MutableComponent component, List<ArmorMaterialBuilder.ShyEffect> list){
+            if (list != null) {
+                for (int i = 0; i < list.size(); i++) {
+                    MobEffect effect = list.get(i).effect().value();
+                    var effectName = effect.getDisplayName().getString();
+                    component.append(Component.literal(effectName).withColor(effect.getColor()));
+                    if (i < list.size() - 1) {
+                        component.append(Component.literal(", ").withStyle(component.getStyle()));
+                    }
+                }
+                tooltip.add(component);
+            }
+        }
     }
 
     public static final class Level {
@@ -492,7 +535,7 @@ public final class Utils {
             return level.structureManager().getAllStructuresAt(pos).keySet().stream().map(structureRegistry::getKey).filter(Objects::nonNull).toList();
         }
 
-        public static boolean isPosInStructure(net.minecraft.world.level.Level level, BlockPos pos, ResourceLocation structureId) {
+        public static boolean isStructure(net.minecraft.world.level.Level level, BlockPos pos, ResourceLocation structureId) {
             if (!(level instanceof ServerLevel sl)) return false;
             Registry<Structure> registry = sl.registryAccess().lookupOrThrow(Registries.STRUCTURE);
             Structure structure = registry.getValue(structureId);

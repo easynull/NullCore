@@ -130,7 +130,7 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
 
     public static boolean canBlocked(ServerPlayer player, InteractionHand hand, BlockPos pos, ServerLevel level) {
         for (var id : LockableManager.selfLockable.keySet()) {
-            if (Utils.Level.isPosInStructure(level, pos, id) || level.getBiome(pos).is(id)) {
+            if (Utils.Level.isStructure(level, pos, id) || level.getBiome(pos).is(id)) {
                 LockableEntry entry = LockableManager.selfLockable.get(id);
                 ItemStack itemInHand = player.getItemInHand(hand);
                 if (!entry.lock()) {

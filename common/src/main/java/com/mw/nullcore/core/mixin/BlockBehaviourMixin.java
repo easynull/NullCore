@@ -25,17 +25,17 @@ import static com.mw.nullcore.Utils.Client.setSafeScreen;
 
 @Mixin(BlockBehaviour.class)
 public final class BlockBehaviourMixin {
-    @Inject(method = "onRemove", at = @At(value = "TAIL"))
+    @Inject(method = "onRemove", at = @At(value = "HEAD"))
     private void nc$breaking(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston, CallbackInfo ci) {
         if (!(level.getBlockEntity(pos) instanceof ContainerHave i)) return;
-        if (state.getBlock() != newState.getBlock()) {
+        if (state.getBlock() != newState.getBlock() && i.useMixinSetting()) {
             Containers.dropContents(level, pos, i.getInventory());
         }
     }
 
     @Inject(method = "useWithoutItem", at = @At(value = "HEAD"), cancellable = true)
     private void nc$useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
-        if(state.hasBlockEntity() && level.getBlockEntity(pos) instanceof ScreenHave s && s.useMixinSetting() && s.canOpen(level, player, state)){
+        if (state.hasBlockEntity() && level.getBlockEntity(pos) instanceof ScreenHave s && s.useMixinSetting() && s.canOpen(level, player, state)) {
             setSafeScreen(s.getScreen(level, player));
             cir.setReturnValue(InteractionResult.SUCCESS);
         } else if (state.getBlock() instanceof ScreenHave s && s.useMixinSetting() && s.canOpen(level, player, state)) {

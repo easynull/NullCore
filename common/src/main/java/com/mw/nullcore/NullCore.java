@@ -26,6 +26,10 @@ public final class NullCore {
 		return ResourceKey.create(key, path(id));
 	}
 
+	public static <T> ResourceKey<T> key(ResourceKey<? extends Registry<T>> key, String modid, String id) {
+		return ResourceKey.create(key, ResourceLocation.fromNamespaceAndPath(modid, id));
+	}
+
 	public static void init() {
 		NullComponents.initialization();
 		NullEntities.initialization();

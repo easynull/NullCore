@@ -55,7 +55,7 @@ public final class TrackerTicker {
             }
         }
         for (ResourceLocation structureId : TracksManager.selfTracks.keySet()) {
-            if (level instanceof ServerLevel sl && Utils.Level.isPosInStructure(sl, pos, structureId)) {
+            if (level instanceof ServerLevel sl && Utils.Level.isStructure(sl, pos, structureId)) {
                 return structureId;
             }
         }
