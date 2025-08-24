@@ -18,7 +18,7 @@ public final class GuiRenderBuilder {
     private VertexConsumer vertex;
     private PoseStack ps;
     float u0, v0, u1, v1, alpha = 1f, lifeTime;
-    float[] color;
+    float[] color = Utils.Color.unpack(0xFFFFFFFF, false);
     int countPer;
 
     private GuiRenderBuilder(){}
@@ -48,7 +48,7 @@ public final class GuiRenderBuilder {
     }
 
     public GuiRenderBuilder color(float mSpeed, int... color) {
-        this.color = Utils.Color.unpack(Utils.Color.lerpColors(mSpeed, color), false);
+        this.color = Utils.Color.unpack(Utils.Color.getCyclingColor(mSpeed, color), false);
         return this;
     }
 

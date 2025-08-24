@@ -1,5 +1,6 @@
 package com.mw.nullcore;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -35,19 +36,27 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import java.text.DecimalFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -62,7 +71,7 @@ public final class Utils {
     public static final float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
     public static int clientTick;
 
-    public static boolean isClient(){
+    public static boolean isClient() {
         return Platform.PLATFORM.isClient();
     }
 
@@ -73,12 +82,21 @@ public final class Utils {
 
         public static void forEachSphere(BlockPos center, int radius, Consumer<BlockPos> action) {
             int radiusSq = radius * radius;
-            forEachInVolume(center, radius, radius, radius, pos -> {int dx = pos.getX() - center.getX();int dy = pos.getY() - center.getY();int dz = pos.getZ() - center.getZ();return dx * dx + dy * dy + dz * dz <= radiusSq;}, action);
+            forEachInVolume(center, radius, radius, radius, pos -> {
+                int dx = pos.getX() - center.getX();
+                int dy = pos.getY() - center.getY();
+                int dz = pos.getZ() - center.getZ();
+                return dx * dx + dy * dy + dz * dz <= radiusSq;
+            }, action);
         }
 
         public static void forEachCircle(BlockPos center, int radius, int height, Consumer<BlockPos> action) {
             int radiusSq = radius * radius;
-            forEachInVolume(center, radius, height, radius, pos -> {int dx = pos.getX() - center.getX();int dz = pos.getZ() - center.getZ();return dx * dx + dz * dz <= radiusSq;}, action);
+            forEachInVolume(center, radius, height, radius, pos -> {
+                int dx = pos.getX() - center.getX();
+                int dz = pos.getZ() - center.getZ();
+                return dx * dx + dz * dz <= radiusSq;
+            }, action);
         }
 
         public static void forEachDiamond(BlockPos center, int radius, int height, Consumer<BlockPos> action) {
@@ -142,7 +160,7 @@ public final class Utils {
         }
     }
 
-    public static final class Item{
+    public static final class Item {
         public static NonNullList<ItemStack> inventoryToList(Container inv) {
             NonNullList<ItemStack> list = NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
             for (int i = 0; i < inv.getContainerSize(); i++) {
@@ -164,7 +182,7 @@ public final class Utils {
 
                     ItemStack toGive = slotStack.copy();
                     toGive.setCount(transferAmount);
-                    if(!player.level().isClientSide()) {
+                    if (!player.level().isClientSide()) {
                         ShyItemEntity entity = new ShyItemEntity(player.level(), player.getOnPos(), toGive, false);
                         entity.spawn();
                     }
@@ -201,6 +219,36 @@ public final class Utils {
             }
             return false;
         }
+
+        public static LootTable getLootTable(ServerLevel level, ResourceKey<LootTable> id){
+            return level.getServer().reloadableRegistries().getLootTable(id);
+        }
+
+        public static LootParams getGiftParams(ServerLevel level, Vec3 pos, Entity entity, float luck){
+            return new LootParams.Builder(level).withParameter(LootContextParams.THIS_ENTITY, entity).withParameter(LootContextParams.ORIGIN, pos).withLuck(luck).create(LootContextParamSets.GIFT);
+        }
+
+        public static List<ItemStack> createLoot(ResourceKey<LootTable> id, LootParams params) {
+            LootTable loot = getLootTable(params.getLevel(), id);
+            if (loot == LootTable.EMPTY) return Lists.newArrayList();
+            return loot.getRandomItems(params);
+        }
+
+        public static void giveLoot(Player player, List<ItemStack> items) {
+            for (ItemStack stack : items) {
+                if (!player.getInventory().add(stack)) {
+                    player.drop(stack, false);
+                }
+            }
+        }
+
+        public static void spawnLoot(net.minecraft.world.level.Level level, BlockPos pPos, Collection<ItemStack> items){
+            if(!level.isClientSide()){
+                for(ItemStack stack : items){
+                    level.addFreshEntity(new ItemEntity(level, pPos.getX() + 0.5F, pPos.getY() + 0.5F, pPos.getZ() + 0.5F, stack));
+                }
+            }
+        }
     }
 
     public static final class Client {
@@ -219,7 +267,7 @@ public final class Utils {
         }
 
         public static void tickClient() {
-            if (!mc.isPaused()){
+            if (!mc.isPaused()) {
                 TrackerController.tick();
                 clientTick++;
             }
@@ -239,7 +287,7 @@ public final class Utils {
                             ((color >> 8) & 0xFF) / 255f,
                             (color & 0xFF) / 255f,
                             ((color >> 24) & 0xFF) / 255f
-                    }:
+                    } :
                     new float[]{
                             ((color >> 24) & 0xFF) / 255f,
                             ((color >> 16) & 0xFF) / 255f,
@@ -249,7 +297,7 @@ public final class Utils {
         }
 
         public static int pack(float r, float g, float b, float a, boolean asARGB) {
-            return asARGB ? ((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255) : ((int)(r * 255) << 24) | ((int)(g * 255) << 16) | ((int)(b * 255) << 8) | (int)(a * 255);
+            return asARGB ? ((int) (a * 255) << 24) | ((int) (r * 255) << 16) | ((int) (g * 255) << 8) | (int) (b * 255) : ((int) (r * 255) << 24) | ((int) (g * 255) << 16) | ((int) (b * 255) << 8) | (int) (a * 255);
         }
 
         public static int hexPack(String hexColor) {
@@ -264,7 +312,7 @@ public final class Utils {
 
         public static int lerpColors(float progress, int... colors) {
             float segment = progress * (colors.length - 1);
-            int index = (int)segment;
+            int index = (int) segment;
             float factor = segment - index;
 
             if (index >= colors.length - 1) {
@@ -280,7 +328,7 @@ public final class Utils {
 
         public static int getCyclingColor(float speed, int... colors) {
             float time = Render.getAnimationTick() * speed;
-            return lerpColors((net.minecraft.util.Mth.sin(time) + 1) / 2, colors);
+            return lerpColors((net.minecraft.util.Mth.sin(time) + 1f) / 2f, colors);
         }
 
         public static int getRainbow(float speed) {
@@ -294,7 +342,7 @@ public final class Utils {
 
     public static final class Mth {
         public static boolean chance(float chance) {
-            return rand.nextFloat() < net.minecraft.util.Mth.clamp(chance, 0, (byte)1);
+            return rand.nextFloat() < net.minecraft.util.Mth.clamp(chance, 0, (byte) 1);
         }
 
         public static String formatRealTime(long gameTime) {
@@ -317,7 +365,7 @@ public final class Utils {
         }
 
         public static int secondTick(int seconds) {
-           return seconds * 20;
+            return seconds * 20;
         }
 
         public static int minuteTick(int minutes) {
@@ -423,11 +471,11 @@ public final class Utils {
             ps.popPose();
         }
 
-        public static float getAnimationTick(float pTick){
+        public static float getAnimationTick(float pTick) {
             return pTick + clientTick;
         }
 
-        public static float getAnimationTick(){
+        public static float getAnimationTick() {
             return getAnimationTick(partialTick);
         }
     }
@@ -465,11 +513,11 @@ public final class Utils {
             if (offset < 0) offset += 1.0f;
 
             for (int i = 0; i < length; i++) {
-                float pos = (float)i / length + offset;
+                float pos = (float) i / length + offset;
                 pos %= 1.0f;
 
                 float colorPos = pos * (colors.length - 1);
-                int colorIndex = (int)colorPos;
+                int colorIndex = (int) colorPos;
                 float lerp = colorPos - colorIndex;
 
                 int color1 = colors[colorIndex % colors.length];
@@ -498,7 +546,7 @@ public final class Utils {
             }
         }
 
-        public static void addTooltipEffects(List<Component> tooltip, MutableComponent component, List<ArmorMaterialBuilder.ShyEffect> list){
+        public static void addTooltipEffects(List<Component> tooltip, MutableComponent component, List<ArmorMaterialBuilder.ShyEffect> list) {
             if (list != null) {
                 for (int i = 0; i < list.size(); i++) {
                     MobEffect effect = list.get(i).effect().value();
@@ -530,7 +578,7 @@ public final class Utils {
             return level.registryAccess().lookupOrThrow(Registries.BIOME).getKey(biome);
         }
 
-        public static List<ResourceLocation> getStructuresAt(ServerLevel level, BlockPos pos){
+        public static List<ResourceLocation> getStructuresAt(ServerLevel level, BlockPos pos) {
             Registry<Structure> structureRegistry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
             return level.structureManager().getAllStructuresAt(pos).keySet().stream().map(structureRegistry::getKey).filter(Objects::nonNull).toList();
         }

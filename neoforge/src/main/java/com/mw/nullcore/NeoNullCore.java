@@ -2,15 +2,12 @@ package com.mw.nullcore;
 
 import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.core.builders.CommandBuilder;
-import com.mw.nullcore.core.holders.OuterItem;
 import com.mw.nullcore.core.items.CreativeContent;
 import com.mw.nullcore.core.events.ClientEvents;
-import com.mw.nullcore.core.items.armor.CompactSuitItem;
 import com.mw.nullcore.platform.NeoPlatform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.equipment.ArmorType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLPaths;
@@ -38,11 +35,5 @@ public final class NeoNullCore {
                 }
             }
         });
-        OuterItem items = OuterItem.create(ID);
-        items.registerItem("cap", p -> new ShakeItem(p, ArmorType.HELMET));
-        items.registerItem("leggings", p -> new ShakeItem(p, ArmorType.LEGGINGS));
-        items.registerItem("boots", p -> new ShakeItem(p, ArmorType.BOOTS));
-        items.registerItem("compact", p -> new CompactSuitItem(p, ArmorMaterials.easynull));
-        items.register(bus);
     }
 }

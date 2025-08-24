@@ -35,7 +35,6 @@ public final class OuterCreativeTab extends DeferredRegister<CreativeModeTab> {
         return register(id, ()-> CreativeModeTab.builder().title(title).icon(icon).displayItems((p, o) -> {
             for (ItemLike item : items) {
                 if (item != null) o.accept(item);
-                NullCore.LOG.info("Register creative tab id {}", id);
             }
         }).backgroundTexture(background).withSearchBar().build());
     }
@@ -45,7 +44,7 @@ public final class OuterCreativeTab extends DeferredRegister<CreativeModeTab> {
     }
 
     public DeferredHolder<CreativeModeTab, CreativeModeTab> registerSearchTab(String id, Component title, Supplier<ItemStack> icon, ItemLike... items){
-        return registerSearchTab(id, title, icon, CreativeModeTab.createTextureLocation("items"), items);
+        return registerSearchTab(id, title, icon, CreativeModeTab.createTextureLocation("item_search"), items);
     }
 
     @Override
