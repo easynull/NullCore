@@ -19,6 +19,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.*;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -63,6 +65,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import static com.mw.nullcore.NullCore.LOG;
+import static com.mw.nullcore.core.builders.GuiRenderBuilder.BLOCK_ATLAS;
 
 public final class Utils {
     public static final @NotNull Minecraft mc = Minecraft.getInstance();
@@ -411,7 +414,7 @@ public final class Utils {
     }
 
     public static final class Render {
-        private static final MultiBufferSource mBuffer = mc.renderBuffers().bufferSource();
+        public static final MultiBufferSource mBuffer = mc.renderBuffers().bufferSource();
 
         public static void drawTexture(GuiGraphics gg, ResourceLocation texture, int x, int y, int u, int v, int pixelWidth, int pixelHeight, int width, int height, int color) {
             gg.blit(RenderType::guiTextured, texture, x, y, u, v, pixelWidth, pixelHeight, width, height, color);
@@ -477,6 +480,11 @@ public final class Utils {
 
         public static float getAnimationTick() {
             return getAnimationTick(partialTick);
+        }
+
+        public static TextureAtlasSprite getSprite(ResourceLocation texture){
+            TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(BLOCK_ATLAS);
+            return atlas.getSprite(texture);
         }
     }
 

@@ -2,72 +2,48 @@ package com.mw.nullcore.core.builders;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mw.nullcore.NullCore;
 import com.mw.nullcore.Utils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
 import java.util.function.Function;
 
-public final class GuiRenderBuilder {
-    static final Vector3f[] positions = new Vector3f[]{new Vector3f(-1, 1, 0), new Vector3f(1, 1, 0), new Vector3f(1, -1, 0), new Vector3f(-1, -1, 0)};
-    static float pTick = Utils.partialTick;
-    private VertexConsumer vertex;
-    private PoseStack ps;
-    float u0, v0, u1, v1, alpha = 1f, lifeTime;
-    float[] color = Utils.Color.unpack(0xFFFFFFFF, false);
-    int countPer;
+public class GuiRenderBuilder {
+    public static final ResourceLocation BLOCK_ATLAS = ResourceLocation.tryParse("textures/atlas/blocks.png");
+    protected final MultiBufferSource mBuffer = Utils.Render.mBuffer;
+    protected float u0, v0, u1, v1, a = 1f;
+    protected float[] color;
+    protected VertexConsumer vertex;
+    protected PoseStack ps;
+    protected PoseStack.Pose pose;
+    protected ResourceLocation texture;
+    protected TextureAtlasSprite sprite;
 
-    private GuiRenderBuilder(){}
-
-    public static GuiRenderBuilder builder(){
+    public static GuiRenderBuilder builder() {
         return new GuiRenderBuilder();
     }
 
-    public GuiRenderBuilder copyData(GuiRenderBuilder builder){
-        builder.ps = this.ps;
-        vertex = builder.vertex;
-        u0 = builder.u0;
-        u1 = builder.u1;
-        v0 = builder.v0;
-        v1 = builder.v1;
-        alpha = builder.alpha;
-        color = builder.color;
-        return this;
-    }
-
-    @NotNull
-    public GuiRenderBuilder renderType(Function<ResourceLocation, RenderType> type, String modId, String path) {
-        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(modId, path);
-        final MultiBufferSource mBuffer = Utils.mc.renderBuffers().bufferSource();
+    public GuiRenderBuilder renderType(Function<ResourceLocation, RenderType> type, ResourceLocation texture) {
         this.vertex = mBuffer.getBuffer(type.apply(texture));
+        this.texture = texture;
         return this;
     }
 
-    public GuiRenderBuilder color(float mSpeed, int... color) {
-        this.color = Utils.Color.unpack(Utils.Color.getCyclingColor(mSpeed, color), false);
-        return this;
+    public GuiRenderBuilder renderType(ResourceLocation texture) {
+        return renderType(RenderType::guiTextured, texture);
     }
 
-    public GuiRenderBuilder color(int color) {
-        return color(0, color);
-    }
-
-    public GuiRenderBuilder alpha(float alpha) {
-        this.alpha = alpha;
-        return this;
-    }
-
-    public GuiRenderBuilder pulseAlpha(float mSpeed){
-        float pulse = (Mth.sin((Utils.clientTick + pTick) * mSpeed) * 0.5f + 0.5f);
-        return alpha(pulse);
-    }
-
-    public GuiRenderBuilder poseStack(PoseStack ps) {
+    public GuiRenderBuilder pose(PoseStack ps) {
         this.ps = ps;
+        pose = ps.last();
         return this;
     }
 
@@ -77,7 +53,7 @@ public final class GuiRenderBuilder {
     }
 
     public GuiRenderBuilder spinner(float mSpeed){
-        float rotationTime = (Utils.clientTick + pTick) * mSpeed + 0.5f;
+        float rotationTime = Utils.Render.getAnimationTick() * mSpeed + 0.5f;
         return rotate(rotationTime);
     }
 
@@ -87,42 +63,63 @@ public final class GuiRenderBuilder {
     }
 
     public GuiRenderBuilder pulseScale(float min, float max, float mSpeed){
-        float pulse = (Mth.sin((Utils.clientTick + pTick) * mSpeed) * 0.5f + 0.5f);
+        float pulse = (Mth.sin(Utils.Render.getAnimationTick() * mSpeed) * 0.5f + 0.5f);
         float scale = min + (min - max) * pulse;
         return scale(scale);
     }
 
-    public GuiRenderBuilder move(float x, float y){
-        return move(x, y, 100f);
-    }
-
-    public GuiRenderBuilder move(float x, float y, float z){
-        ps.translate(x, y, z);
+    public GuiRenderBuilder moveBefore(float x, float y){
+        ps.translate(x, y, 100f);
         return this;
     }
+
+    public GuiRenderBuilder moveAfter(float x, float y) {
+        ps.translate(x, y, 159f);
+        return this;
+    }
+
+    public GuiRenderBuilder color(int color) {
+        this.color = Utils.Color.unpack(color, false);
+        return this;
+    }
+
+    public GuiRenderBuilder color(float r, float g, float b) {
+        this.color = new float[]{r, g, b, a};
+        return this;
+    }
+
+    public GuiRenderBuilder color(float speed, int... color) {
+        this.color = Utils.Color.unpack(Utils.Color.getCyclingColor(speed, color), false);
+        return this;
+    }
+
+    public GuiRenderBuilder alpha(float a) {
+        this.a = a;
+        return this;
+    }
+
+    public GuiRenderBuilder pulseAlpha(float mSpeed){
+        float pulse = (Mth.sin(Utils.Render.getAnimationTick() * mSpeed) * 0.5f + 0.5f);
+        return alpha(pulse);
+    }
+
+//    public GuiRenderBuilder buildParticle(float size, float lifeTime, float minCount, float maxCount, long seed){
+//        return this;
+//    }
 
     public GuiRenderBuilder buildOverlay(float size){
-        return addFrame(size);
+        return buildOverlay(size, size);
     }
 
-    private GuiRenderBuilder lifeSettings(float lifeTime, int countPer){
-        this.lifeTime = lifeTime;
-        this.countPer = countPer;
-        return this;
+    public GuiRenderBuilder buildOverlay(float width, float height){
+        Vector3f[] positions = new Vector3f[]{new Vector3f(-1, 1, 0), new Vector3f(1, 1, 0), new Vector3f(1, -1, 0), new Vector3f(-1, -1, 0)};
+        return renderQuad(positions, width, height);
     }
 
-    //TODO: Still in development 0_-
-    private GuiRenderBuilder buildParticle(float size, float pTick){
-        return this;
-    }
-
-    private GuiRenderBuilder addFrame(float size){
-        this.u0 = size;
-        this.v0 = size;
-        this.u1 = size - 1;
-        this.v1 = size - 1;
-        for(Vector3f position : positions){
-            position.mul(size, size, size);
+    private GuiRenderBuilder renderQuad(Vector3f[] positions, float width, float height) {
+        if (vertex == null || ps == null) return this;
+        for (Vector3f position : positions) {
+            position.mul(width, height, width);
         }
         addVertex(positions[0], u0, v1);
         addVertex(positions[1], u1, v1);
@@ -132,7 +129,6 @@ public final class GuiRenderBuilder {
     }
 
     private void addVertex(Vector3f pos, float u, float v) {
-        if(ps == null || vertex == null) return;
-        this.vertex.addVertex(ps.last(), pos.x(), pos.y(), pos.z()).setColor(color[0], color[1], color[2], alpha).setUv(u, v);
+        vertex.addVertex(pose, pos.x(), pos.y(), pos.z()).setColor(color[0], color[1], color[2], a).setUv(u, v);
     }
 }

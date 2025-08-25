@@ -18,6 +18,7 @@
     "CameraMixin",
     "GuiGraphicsMixin",
     "LevelMixin",
+    "GuiMixin",
     "SoundEngineMixin",
     "SoundManagerAccessor"
   ],
