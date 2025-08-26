@@ -91,13 +91,11 @@ public final class ConfigManager {
         void save() {
             JsonObject json = new JsonObject();
             List<String> keys = new ArrayList<>(config.keySet());
-
             for (String key : keys) {
                 Unit<?> unit = config.get(key);
                 json.addProperty("comment_" + key, unit.comment());
                 addValueToJson(json, key, unit.get());
             }
-
             try {
                 String jsonString = new GsonBuilder().setPrettyPrinting().create().toJson(json);
                 jsonString = jsonString.replaceAll("(\": [^,]+,\\n)(\\s+\"comment_)", "$1  \n$2");
@@ -129,10 +127,6 @@ public final class ConfigManager {
                 this.value = value;
             }
 
-            public void setParse(String value){
-                this.value = parseValue(value);
-            }
-
             public String comment(){
                 return comment;
             }
@@ -142,7 +136,7 @@ public final class ConfigManager {
             }
 
             @SuppressWarnings("unchecked")
-            private V parseValue(String value) {
+            public V parseValue(String value) {
                 if (get() instanceof Boolean) {
                     return (V) Boolean.valueOf(value);
                 } else if (get() instanceof Byte) {

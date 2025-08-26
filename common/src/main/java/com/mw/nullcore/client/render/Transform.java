@@ -3,7 +3,16 @@ package com.mw.nullcore.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.joml.Quaternionf;
 
+import java.util.function.Consumer;
+
 public record Transform(PoseStack ps) {
+
+    public static Transform create(PoseStack ps, Consumer<Transform> transform) {
+        Transform tr = new Transform(ps);
+        transform.accept(tr);
+        return tr;
+    }
+
     public void start() {
         ps.pushPose();
     }

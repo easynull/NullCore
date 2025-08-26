@@ -1,6 +1,5 @@
 package com.mw.nullcore.core.blocks.type;
 
-import com.google.common.base.Preconditions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -61,6 +60,16 @@ public abstract class ContainerBlockEntity extends BlockEntity implements Contai
         ContainerHelper.saveAllItems(tag, items, registries);
     }
 
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return this.saveWithoutMetadata(registries);
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
     public ItemStack getFirst() {
         return inventory.getItem(0).copy();
     }
@@ -70,7 +79,8 @@ public abstract class ContainerBlockEntity extends BlockEntity implements Contai
         return inventory;
     }
 
-    public int getSize() {
+    @Override
+    public int getContainerSize() {
         return inventory.getContainerSize();
     }
 
@@ -92,6 +102,11 @@ public abstract class ContainerBlockEntity extends BlockEntity implements Contai
     }
 
     @Override
+    public ItemStack removeItemNoUpdate(int slot) {
+        return inventory.removeItemNoUpdate(slot);
+    }
+
+    @Override
     public void setItem(int slot, ItemStack stack) {
         inventory.setItem(slot, stack);
         setChanged();
@@ -105,8 +120,8 @@ public abstract class ContainerBlockEntity extends BlockEntity implements Contai
     public boolean stillValid(Player player) {
         return Container.stillValidBlockEntity(this, player);
     }
-
-    public void clear() {
+    @Override
+    public void clearContent() {
         inventory.clearContent();
         setChanged();
     }

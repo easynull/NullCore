@@ -211,11 +211,11 @@ public final class Utils {
             }
         }
 
-        public static LootTable getLootTable(ServerLevel level, ResourceKey<LootTable> id){
+        public static LootTable getLootTable(ServerLevel level, ResourceKey<LootTable> id) {
             return level.getServer().reloadableRegistries().getLootTable(id);
         }
 
-        public static LootParams getGiftParams(ServerLevel level, Vec3 pos, Entity entity, float luck){
+        public static LootParams getGiftParams(ServerLevel level, Vec3 pos, Entity entity, float luck) {
             return new LootParams.Builder(level).withParameter(LootContextParams.THIS_ENTITY, entity).withParameter(LootContextParams.ORIGIN, pos).withLuck(luck).create(LootContextParamSets.GIFT);
         }
 
@@ -233,13 +233,14 @@ public final class Utils {
             }
         }
 
-        public static void spawnLoot(net.minecraft.world.level.Level level, BlockPos pPos, Collection<ItemStack> items){
-            if(!level.isClientSide()){
-                for(ItemStack stack : items){
+        public static void spawnLoot(net.minecraft.world.level.Level level, BlockPos pPos, Collection<ItemStack> items) {
+            if (!level.isClientSide()) {
+                for (ItemStack stack : items) {
                     level.addFreshEntity(new ItemEntity(level, pPos.getX() + 0.5F, pPos.getY() + 0.5F, pPos.getZ() + 0.5F, stack));
                 }
             }
         }
+
         public static <T> void instanceOf(net.minecraft.world.item.Item item, Class<T> targetClass, Consumer<T> action) {
             Object target = item instanceof BlockItem bi ? bi.getBlock() : item;
             if (targetClass.isInstance(target)) {
@@ -448,6 +449,10 @@ public final class Utils {
             gg.drawString(font, str, x, y, color, shadow);
         }
 
+        public static void drawText(GuiGraphics gg, Object text, int x, int y, int color) {
+            drawText(gg, text, x, y, color, false);
+        }
+
         public static void renderRays(PoseStack ps, VertexConsumer buffer, int color, float time, float pTick) {
             ps.pushPose();
             RandomSource rand = RandomSource.create(1L);
@@ -489,7 +494,7 @@ public final class Utils {
             return getAnimationTick(partialTick);
         }
 
-        public static TextureAtlasSprite getSprite(ResourceLocation texture){
+        public static TextureAtlasSprite getSprite(ResourceLocation texture) {
             TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
             return atlas.getSprite(texture);
         }
@@ -518,11 +523,12 @@ public final class Utils {
             return df.format(scaledNumber) + sufx[suffixIndex];
         }
 
-        public static Component addLinerTextGradient(String text, float speed, boolean toRight, int... colors) {
+        public static Component addLinerTextGradient(Object text, float speed, boolean toRight, int... colors) {
+            String str = text instanceof Component c ? c.getString() : text.toString();
             RandomSource rand = RandomSource.create(1L);
             float offset = (toRight ? -(Render.getAnimationTick() * rand.nextFloat() + 0.5f) : (Render.getAnimationTick() * rand.nextFloat() + 0.5f)) * speed;
             MutableComponent component = Component.empty();
-            int length = text.length();
+            int length = str.length();
             if (length == 0 || colors.length == 0) return component;
             offset %= 1.0f;
             if (offset < 0) offset += 1.0f;
@@ -539,22 +545,15 @@ public final class Utils {
                 int color2 = colors[(colorIndex + 1) % colors.length];
                 int color = Color.lerpColors(lerp, color1, color2);
 
-                component.append(Component.literal(String.valueOf(text.charAt(i))).withStyle(style -> style.withColor(color)));
+                component.append(Component.literal(String.valueOf(str.charAt(i))).withStyle(style -> style.withColor(color)));
             }
             return component;
         }
 
-        public static Component addTextCGradient(String text, float speed, int... colors) {
+        public static Component addTextGradient(Object text, float speed, int... colors) {
+            String str = text instanceof Component c ? c.getString() : text.toString();
             int color = Color.getCyclingColor(speed, colors);
-            return Component.literal(text).withColor(TextColor.fromRgb(color & 0xFFFFFF).getValue());
-        }
-
-        public static Component addLinerTextGradient(Component text, float speed, boolean toRight, int... colors) {
-            return addLinerTextGradient(text.getString(), speed, toRight, colors);
-        }
-
-        public static Component addTextCGradient(Component text, float speed, int... colors) {
-            return addTextCGradient(text.getString(), speed, colors);
+            return Component.literal(str).withColor(TextColor.fromRgb(color & 0xFFFFFF).getValue());
         }
 
         public static void addPositionTooltip(List<Component> tooltip, BlockPos pos, Component key, int colorPos, int colorData) {

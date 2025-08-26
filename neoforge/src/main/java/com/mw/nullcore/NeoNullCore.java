@@ -6,7 +6,6 @@ import com.mw.nullcore.core.items.CreativeContent;
 import com.mw.nullcore.core.events.ClientEvents;
 import com.mw.nullcore.platform.NeoPlatform;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -28,11 +27,9 @@ public final class NeoNullCore {
         game.addListener((RegisterCommandsEvent event) -> CommandBuilder.registers(event.getDispatcher()));
         bus.addListener((BuildCreativeModeTabContentsEvent event) -> {
             for (Item item : BuiltInRegistries.ITEM) {
-                if (item instanceof CreativeContent cc) {
+                Utils.Item.instanceOf(item, CreativeContent.class, cc -> {
                     if (event.getTabKey() == cc.getCreativeTab()) cc.addContents(event);
-                } else if (item instanceof BlockItem bi && bi.getBlock() instanceof CreativeContent cc) {
-                    if (event.getTabKey() == cc.getCreativeTab()) cc.addContents(event);
-                }
+                });
             }
         });
     }

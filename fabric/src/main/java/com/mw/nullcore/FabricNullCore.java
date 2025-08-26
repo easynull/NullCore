@@ -15,11 +15,10 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 
 public final class FabricNullCore implements ModInitializer {
-    
+
     @Override
     public void onInitialize() {
         NullCore.init();
@@ -30,16 +29,8 @@ public final class FabricNullCore implements ModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(mc -> Utils.Client.tickClient());
         NullConfig.initialize(FabricLoader.getInstance().getConfigDir());
         CommandRegistrationCallback.EVENT.register(((dispatcher, non2, non1) -> CommandBuilder.registers(dispatcher)));
-        contentsCreativeTab();
-    }
-
-    private void contentsCreativeTab(){
-        for(Item item : BuiltInRegistries.ITEM) {
-            if (item instanceof CreativeContent cc) {
-                ItemGroupEvents.modifyEntriesEvent(cc.getCreativeTab()).register(cc::addContents);
-            } else if (item instanceof BlockItem bi && bi.getBlock() instanceof CreativeContent cc){
-                ItemGroupEvents.modifyEntriesEvent(cc.getCreativeTab()).register(cc::addContents);
-            }
+        for (Item item : BuiltInRegistries.ITEM) {
+            Utils.Item.instanceOf(item, CreativeContent.class, cc -> ItemGroupEvents.modifyEntriesEvent(cc.getCreativeTab()).register(cc::addContents));
         }
     }
 }
