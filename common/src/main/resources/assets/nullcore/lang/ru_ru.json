@@ -1,5 +1,7 @@
 {
   "tooltip.nullcore.info": "Зажмите %s для подробной информации",
   "tooltip.nullcore.suitinfo1": "При полном комплекте: ",
-  "tooltip.nullcore.suitinfo2": "Когда надето: "
+  "tooltip.nullcore.suitinfo2": "Когда надето: ",
+  "message.nullcore.commandset.fail": "Значение не было обновлено",
+  "message.nullcore.commandset.success": "Значение успешно обновлено"
 }

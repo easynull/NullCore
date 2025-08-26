@@ -11,7 +11,7 @@ public final class NullConfig {
     public static ConfigManager.Initialize.Unit<Byte> radiusEntityTrack;
 
     public static void initialize(Path configDir){
-        ConfigManager.register(ID, configDir, ()-> {
+        ConfigManager.register("nullcore", configDir, ()-> {
             enableGuiVFX = ConfigManager.create(
                     "enable_gui_vfx",
                     "Disables/enables rendering of overlays of some items in the inventory",
@@ -22,6 +22,6 @@ public final class NullConfig {
                     "The value that determines the radius of the entity location for playing its track",
                     (byte) 22
             );
-        });
+        }, true);
     }
 }

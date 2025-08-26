@@ -28,7 +28,7 @@ public final class FabricNullCore implements ModInitializer {
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new LockableFabric());
         ClientTickEvents.END_CLIENT_TICK.register(mc -> Utils.Client.tickClient());
         NullConfig.initialize(FabricLoader.getInstance().getConfigDir());
-        CommandRegistrationCallback.EVENT.register(((dispatcher, non2, non1) -> CommandBuilder.registers(dispatcher)));
+        CommandRegistrationCallback.EVENT.register(((dispatcher, non2, non1) -> CommandBuilder.registerAll(dispatcher)));
         for (Item item : BuiltInRegistries.ITEM) {
             Utils.Item.instanceOf(item, CreativeContent.class, cc -> ItemGroupEvents.modifyEntriesEvent(cc.getCreativeTab()).register(cc::addContents));
         }

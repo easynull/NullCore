@@ -1,5 +1,7 @@
 {
   "tooltip.nullcore.info": "Hold %s for details",
   "tooltip.nullcore.suitinfo1": "With full set: ",
-  "tooltip.nullcore.suitinfo2": "When worn: "
+  "tooltip.nullcore.suitinfo2": "When worn: ",
+  "message.nullcore.commandset.fail": "Value has not been updated",
+  "message.nullcore.commandset.success": "Value updated successfully"
 }

@@ -4,12 +4,23 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mw.nullcore.NullCore;
+import com.mw.nullcore.Utils;
+import com.mw.nullcore.core.builders.CommandBuilder;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
+import static com.mw.nullcore.NullCore.ID;
 import static com.mw.nullcore.Utils.Reader.addValueToJson;
 import static com.mw.nullcore.Utils.Reader.parseJsonValue;
 
@@ -17,11 +28,25 @@ public final class ConfigManager {
     private static Initialize INSTANCE;
     public static Map<String, Set<Initialize.Unit<?>>> variables = new HashMap<>();
 
-    public static void register(String modid, Path configDir, Runnable registers) {
+    public static void register(String modid, Path configDir, Runnable registers, boolean createCommand) {
         Path configPath = configDir.resolve(modid + ".json");
         INSTANCE = new Initialize(configPath, modid);
         registers.run();
         INSTANCE.load();
+        if (createCommand) {
+            CommandBuilder.builder(modid)
+                    .requires(0)
+                    .then(Commands.literal("config")
+                            .then(Commands.argument("unit", StringArgumentType.string())
+                                    .suggests((ctx, builder) -> suggestCommandUnits(modid, builder))
+                                    .then(Commands.argument("value", StringArgumentType.string())
+                                            .executes(ctx -> setCommandValue(ctx.getSource(), StringArgumentType.getString(ctx, "unit"), StringArgumentType.getString(ctx, "value")))
+                                    ))).register();
+        }
+    }
+
+    public static void register(String modid, Path configDir, Runnable registers) {
+        register(modid, configDir, registers, false);
     }
 
     public static <V> Initialize.Unit<V> create(String key, String comment, V defaultValue) {
@@ -45,6 +70,22 @@ public final class ConfigManager {
 
     public static <V> void set(String key, V value) {
         set(getUnit(key), value);
+    }
+
+    public static CompletableFuture<Suggestions> suggestCommandUnits(String modid, SuggestionsBuilder builder) {
+        variables.get(modid).forEach(r -> builder.suggest(r.name()));
+        return builder.buildFuture();
+    }
+
+    public static <V> int setCommandValue(CommandSourceStack source, String unit, String value) {
+        Initialize.Unit<V> un = getUnit(unit);
+        if (un == null || un.value == un.parseValue(value)) {
+            source.sendFailure(Component.translatable("message.nullcore.commandset.fail"));
+            return 0;
+        }
+        set(un, un.parseValue(value));
+        source.sendSuccess(()-> Component.translatable("message.nullcore.commandset.success"), false);
+        return 1;
     }
 
     public static final class Initialize {

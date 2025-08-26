@@ -1,6 +1,7 @@
 package com.mw.nullcore.core.builders;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -12,17 +13,17 @@ import java.util.function.Consumer;
 
 public final class CommandBuilder {
     private static final List<Consumer<CommandDispatcher<CommandSourceStack>>> commands = new ArrayList<>();
-    private final List<LiteralArgumentBuilder<CommandSourceStack>> arguments = new ArrayList<>();
+    private final List<ArgumentBuilder<CommandSourceStack, ?>> children = new ArrayList<>();
+    private final String id;
     private int permission = 2;
-    private String id;
+    private CommandExecutor executor;
 
-    public static CommandBuilder builder() {
-        return new CommandBuilder();
+    private CommandBuilder(String id) {
+        this.id = id;
     }
 
-    public CommandBuilder command(String id) {
-        this.id = id;
-        return this;
+    public static CommandBuilder builder(String id) {
+        return new CommandBuilder(id);
     }
 
     public CommandBuilder requires(int permissionLevel) {
@@ -30,25 +31,42 @@ public final class CommandBuilder {
         return this;
     }
 
-    public CommandBuilder then(LiteralArgumentBuilder<CommandSourceStack> argument) {
-        this.arguments.add(argument);
-        return this;
-    }
-
     public CommandBuilder executes(CommandExecutor executor) {
-        LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal(id).requires(src -> src.hasPermission(permission)).executes(executor::execute);
-        arguments.forEach(cmd::then);
+        this.executor = executor;
         return this;
     }
 
-    public CommandBuilder create(CommandExecutor executor) {
-        LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal(id).requires(src -> src.hasPermission(permission)).executes(executor::execute);
-        commands.add(dispatcher -> dispatcher.register(cmd));
+    public CommandBuilder then(ArgumentBuilder<CommandSourceStack, ?> argument) {
+        this.children.add(argument);
         return this;
     }
 
-    public static void registers(CommandDispatcher dispatcher) {
-        commands.forEach(consumer -> consumer.accept(dispatcher));
+    public CommandBuilder then(LiteralArgumentBuilder<CommandSourceStack> argument) {
+        this.children.add(argument);
+        return this;
+    }
+
+    public void register() {
+        commands.add(dispatcher -> {
+            LiteralArgumentBuilder<CommandSourceStack> builder = Commands.literal(id).requires(src -> src.hasPermission(permission));
+            if (executor != null) {
+                builder.executes(executor::execute);
+            }
+            for (ArgumentBuilder<CommandSourceStack, ?> child : children) {
+                builder.then(child);
+            }
+            dispatcher.register(builder);
+        });
+    }
+
+    public static void registerAll(CommandDispatcher<CommandSourceStack> dispatcher) {
+        for (Consumer<CommandDispatcher<CommandSourceStack>> command : commands) {
+            command.accept(dispatcher);
+        }
+    }
+
+    public static LiteralArgumentBuilder<CommandSourceStack> literal(String name) {
+        return Commands.literal(name);
     }
 
     @FunctionalInterface
