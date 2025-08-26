@@ -1,10 +1,12 @@
 package com.mw.nullcore.core.holders;
 
+import com.mw.nullcore.NullCore;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -26,14 +28,26 @@ public final class OuterBlock extends DeferredRegister<Block> {
         return new OuterBlock(modId, withItems);
     }
 
-    public <B extends Block> DeferredBlock<B> registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block, Block copy) {
-        DeferredBlock<B> reg = register(name, () -> block.apply((copy != null ? BlockBehaviour.Properties.ofFullCopy(copy) : BlockBehaviour.Properties.of()).setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(id, name)))));
-        if (register != null) register.registerItem(name, prop -> new BlockItem(reg.get(), prop));
+    public static OuterBlock create(String modId){
+        return new OuterBlock(modId, null);
+    }
+
+    public <B extends Block> DeferredBlock<B> registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> prop, Block copy, Item.Properties itemProp) {
+        DeferredBlock<B> reg = register(name, () -> prop.apply((copy != null ? BlockBehaviour.Properties.ofFullCopy(copy) : BlockBehaviour.Properties.of()).setId(NullCore.key(Registries.BLOCK, id, name))));
+        if (register != null) register.register(name, ()-> new BlockItem(reg.get(), itemProp.setId(NullCore.key(Registries.ITEM, id, name))));
         return reg;
     }
 
+    public <B extends Block> DeferredBlock<B> registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block, Item.Properties itemProp) {
+        return registerBlock(name, block, null, itemProp);
+    }
+
+    public <B extends Block> DeferredBlock<B> registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block, Block copy) {
+        return registerBlock(name, block, copy, new Item.Properties());
+    }
+
     public <B extends Block> DeferredBlock<B> registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block) {
-        return registerBlock(name, block, null);
+        return registerBlock(name, block, null, new Item.Properties());
     }
 
     @Override

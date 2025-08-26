@@ -27,6 +27,10 @@ public class EntitibleBlock extends Block implements EntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return Tickable.getTicker();
+        return (l, pos, s, be) -> {
+            if (be instanceof Tickable tickable) {
+                tickable.tick();
+            }
+        };
     }
 }

@@ -18,9 +18,9 @@ import java.util.Optional;
 public final class MobMixin {
     @Inject(method = "isSunBurnTick", at = @At("HEAD"), cancellable = true)
     private void nc$isSunBurnTick(CallbackInfoReturnable<Boolean> cir) {
-        Mob mob = (Mob) (Object) this;
-        Level level = mob.level();
-        Holder<Biome> biome = level.getBiome(mob.blockPosition());
+        Mob self = (Mob) (Object) this;
+        Level level = self.level();
+        Holder<Biome> biome = level.getBiome(self.blockPosition());
         ResourceLocation id = biome.unwrapKey().map(ResourceKey::location).orElse(null);
         Optional<Long> time = BiomeRulesManager.getRules(id)
                 .flatMap(r -> r.getRule("fixed_time", Long.class));
@@ -29,7 +29,7 @@ public final class MobMixin {
 
         if (time.isPresent() || weather.isPresent()) {
             boolean isDay = time.map(t -> t % 24000 < 12000).orElseGet(() -> level.getDayTime() % 24000 < 12000);
-            boolean isRaining = weather.map(intensity -> intensity > 0.5f).orElseGet(() -> level.isRainingAt(mob.blockPosition()));
+            boolean isRaining = weather.map(intensity -> intensity > 0.5f).orElseGet(() -> level.isRainingAt(self.blockPosition()));
             cir.setReturnValue(isDay && !isRaining);
         }
     }

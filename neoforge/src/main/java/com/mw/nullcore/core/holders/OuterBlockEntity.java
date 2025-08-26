@@ -22,8 +22,8 @@ public final class OuterBlockEntity extends DeferredRegister<BlockEntityType<?>>
         return new OuterBlockEntity(modId);
     }
 
-    public <S extends BlockEntity> DeferredHolder<BlockEntityType<?>, BlockEntityType<S>> registerType(String id, BlockEntityType.BlockEntitySupplier<S> supplier, Block... blocks) {
-        return register(id, ()-> new BlockEntityType<>(supplier,  blocks));
+    public <S extends BlockEntity> DeferredHolder<BlockEntityType<?>, BlockEntityType<S>> registerType(String name, BlockEntityType.BlockEntitySupplier<S> supplier, Block... blocks) {
+        return register(name, ()-> new BlockEntityType<>(supplier,  blocks));
     }
 
     @Override

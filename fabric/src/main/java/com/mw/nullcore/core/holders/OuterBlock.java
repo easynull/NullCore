@@ -1,11 +1,13 @@
 package com.mw.nullcore.core.holders;
 
+import com.mw.nullcore.NullCore;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import java.util.HashMap;
@@ -30,11 +32,23 @@ public final class OuterBlock {
         return create(modid, null);
     }
 
-    public <B extends Block> B registerBlock(String id, Function<BlockBehaviour.Properties, ? extends B> block, Block copy) {
-        B reg = block.apply((copy != null ? BlockBehaviour.Properties.ofFullCopy(copy) : BlockBehaviour.Properties.of()).setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(modid, id))));
-        blocks.put(ResourceLocation.fromNamespaceAndPath(modid, id), reg);
-        if (items != null) items.registerItem(id, prop -> new BlockItem(reg, prop));
+    public <B extends Block> B registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block, Block copy, Item.Properties itemProp) {
+        B reg = block.apply((copy != null ? BlockBehaviour.Properties.ofFullCopy(copy) : BlockBehaviour.Properties.of()).setId(ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(modid, name))));
+        blocks.put(ResourceLocation.fromNamespaceAndPath(modid, name), reg);
+        if (items != null) items.register(name, ()-> new BlockItem(reg, itemProp.setId(NullCore.key(Registries.ITEM, modid, name))));
         return reg;
+    }
+
+    public <B extends Block> B registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block, Block copy) {
+        return registerBlock(name, block, copy, new Item.Properties());
+    }
+
+    public <B extends Block> B registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block, Item.Properties itemProp) {
+        return registerBlock(name, block, null, itemProp);
+    }
+
+    public <B extends Block> B registerBlock(String name, Function<BlockBehaviour.Properties, ? extends B> block) {
+        return registerBlock(name, block, null, new Item.Properties());
     }
 
     public void registerAll() {

@@ -23,9 +23,9 @@ public final class OuterBlockEntity {
         return new OuterBlockEntity(modid);
     }
 
-    public <T extends BlockEntity> BlockEntityType<T> registerType(String id, FabricBlockEntityTypeBuilder.Factory<? extends T> factory, Block... blocks){
+    public <T extends BlockEntity> BlockEntityType<T> registerType(String name, FabricBlockEntityTypeBuilder.Factory<? extends T> factory, Block... blocks){
         BlockEntityType reg = FabricBlockEntityTypeBuilder.create(factory, blocks).build();
-        types.put(ResourceLocation.fromNamespaceAndPath(modid, id), reg);
+        types.put(ResourceLocation.fromNamespaceAndPath(modid, name), reg);
         return reg;
     }
 

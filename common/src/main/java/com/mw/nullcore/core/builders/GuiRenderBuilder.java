@@ -2,12 +2,9 @@ package com.mw.nullcore.core.builders;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mw.nullcore.NullCore;
 import com.mw.nullcore.Utils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -17,7 +14,6 @@ import org.joml.Vector3f;
 import java.util.function.Function;
 
 public class GuiRenderBuilder {
-    public static final ResourceLocation BLOCK_ATLAS = ResourceLocation.tryParse("textures/atlas/blocks.png");
     protected final MultiBufferSource mBuffer = Utils.Render.mBuffer;
     protected float u0, v0, u1, v1, a = 1f;
     protected float[] color;
@@ -25,7 +21,6 @@ public class GuiRenderBuilder {
     protected PoseStack ps;
     protected PoseStack.Pose pose;
     protected ResourceLocation texture;
-    protected TextureAtlasSprite sprite;
 
     public static GuiRenderBuilder builder() {
         return new GuiRenderBuilder();
@@ -40,6 +35,15 @@ public class GuiRenderBuilder {
     public GuiRenderBuilder renderType(ResourceLocation texture) {
         return renderType(RenderType::guiTextured, texture);
     }
+
+//    public GuiRenderBuilder uv(TextureAtlasSprite sprite) {
+//        this.sprite = sprite;
+//        this.u0 = sprite.getU0();
+//        this.v0 = sprite.getV0();
+//        this.u1 = sprite.getU1();
+//        this.v1 = sprite.getV1();
+//        return this;
+//    }
 
     public GuiRenderBuilder pose(PoseStack ps) {
         this.ps = ps;
@@ -112,19 +116,22 @@ public class GuiRenderBuilder {
     }
 
     public GuiRenderBuilder buildOverlay(float width, float height){
+        this.u0 = width;
+        this.v0 = height;
+        this.u1 = width - 1;
+        this.v1 = height - 1;
         Vector3f[] positions = new Vector3f[]{new Vector3f(-1, 1, 0), new Vector3f(1, 1, 0), new Vector3f(1, -1, 0), new Vector3f(-1, -1, 0)};
         return renderQuad(positions, width, height);
     }
 
     private GuiRenderBuilder renderQuad(Vector3f[] positions, float width, float height) {
-        if (vertex == null || ps == null) return this;
         for (Vector3f position : positions) {
             position.mul(width, height, width);
         }
-        addVertex(positions[0], u0, v1);
-        addVertex(positions[1], u1, v1);
-        addVertex(positions[2], u1, v0);
-        addVertex(positions[3], u0, v0);
+        addVertex(positions[0], u0, v0);
+        addVertex(positions[1], u1, v0);
+        addVertex(positions[2], u1, v1);
+        addVertex(positions[3], u0, v1);
         return this;
     }
 

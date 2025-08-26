@@ -20,9 +20,9 @@ public final class OuterSound {
         return new OuterSound(modid);
     }
 
-    public <S extends SoundEvent> S registerSound(String id){
-        S reg = (S) SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(modid, id));
-        sounds.put(ResourceLocation.fromNamespaceAndPath(modid, id), reg);
+    public <S extends SoundEvent> S registerSound(String name){
+        S reg = (S) SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(modid, name));
+        sounds.put(ResourceLocation.fromNamespaceAndPath(modid, name), reg);
         return reg;
     }
 

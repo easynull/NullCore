@@ -157,7 +157,7 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
     }
 
     private static void sendLockMessage(Player player, LockableEntry entry, Level level) {
-        Utils.Text.sendMessage(player, entry.message());
+        Utils.Client.sendMessage(player, entry.message());
         if (entry.soundMessage() != null) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), entry.soundMessage(), SoundSource.PLAYERS, 1.0f, 1.0f);
         }

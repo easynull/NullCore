@@ -10,7 +10,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mw.nullcore.client.audio.TrackerController;
 import com.mw.nullcore.core.blocks.type.ContainerBlockEntity;
 import com.mw.nullcore.core.builders.ArmorMaterialBuilder;
-import com.mw.nullcore.core.entities.ShyItemEntity;
 import com.mw.nullcore.platform.Platform;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.Minecraft;
@@ -28,6 +27,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.FillBiomeCommand;
@@ -35,13 +36,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -65,11 +67,10 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import static com.mw.nullcore.NullCore.LOG;
-import static com.mw.nullcore.core.builders.GuiRenderBuilder.BLOCK_ATLAS;
 
 public final class Utils {
     public static final @NotNull Minecraft mc = Minecraft.getInstance();
-    public static final RandomSource rand = RandomSource.createNewThreadLocalInstance();
+    public static final RandomSource rand = RandomSource.create(1L);
     public static final @NotNull Font font = mc.font;
     public static final float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
     public static int clientTick;
@@ -173,54 +174,41 @@ public final class Utils {
         }
 
         public static boolean insertItem(ContainerBlockEntity be, Player player, int slot, int maxTransfer) {
-            SimpleContainer inventory = be.getInventory();
-            ItemStack slotStack = inventory.getItem(slot);
+            SimpleContainer inv = be.getInventory();
+            ItemStack slotStack = inv.getItem(slot);
             ItemStack heldStack = player.getMainHandItem();
-
             int actualMax = Math.min(maxTransfer, be.maxInSlot);
 
             if (heldStack.isEmpty()) {
-                if (!slotStack.isEmpty()) {
-                    int transferAmount = Math.min(slotStack.getCount(), actualMax);
+                if (slotStack.isEmpty()) return false;
+                int transferAmount = Math.min(slotStack.getCount(), actualMax);
 
-                    ItemStack toGive = slotStack.copy();
-                    toGive.setCount(transferAmount);
-                    if (!player.level().isClientSide()) {
-                        ShyItemEntity entity = new ShyItemEntity(player.level(), player.getOnPos(), toGive, false);
-                        entity.spawn();
-                    }
-                    slotStack.shrink(transferAmount);
+                player.setItemInHand(InteractionHand.MAIN_HAND, slotStack.copy());
+                slotStack.shrink(transferAmount);
+                inv.setItem(slot, slotStack.isEmpty() ? ItemStack.EMPTY : slotStack);
+                return true;
+            } else if (slotStack.isEmpty()) {
+                int transferAmount = Math.min(heldStack.getCount(), actualMax);
+                ItemStack insert = heldStack.copyWithCount(transferAmount);
 
-                    if (slotStack.isEmpty()) {
-                        inventory.setItem(slot, ItemStack.EMPTY);
-                    } else {
-                        inventory.setItem(slot, slotStack);
-                    }
-                    return true;
-                }
+                inv.setItem(slot, insert);
+                heldStack.shrink(transferAmount);
+                return true;
+            } else if (ItemStack.isSameItem(slotStack, heldStack)) {
+                int spaceAvailable = Math.min(be.maxInSlot, slotStack.getMaxStackSize()) - slotStack.getCount();
+                int transferAmount = Math.min(Math.min(heldStack.getCount(), spaceAvailable), actualMax);
+
+                if (transferAmount <= 0) return false;
+
+                slotStack.grow(transferAmount);
+                heldStack.shrink(transferAmount);
+                inv.setItem(slot, slotStack);
+                return true;
             } else {
-                if (slotStack.isEmpty()) {
-                    int transferAmount = Math.min(heldStack.getCount(), actualMax);
-
-                    ItemStack toInsert = heldStack.copy();
-                    toInsert.setCount(transferAmount);
-
-                    inventory.setItem(slot, toInsert);
-                    heldStack.shrink(transferAmount);
-                    return true;
-                } else if (ItemStack.isSameItem(slotStack, heldStack)) {
-                    int spaceAvailable = Math.min(be.maxInSlot, slotStack.getMaxStackSize()) - slotStack.getCount();
-                    int transferAmount = Math.min(Math.min(heldStack.getCount(), spaceAvailable), actualMax);
-
-                    if (transferAmount > 0) {
-                        slotStack.grow(transferAmount);
-                        heldStack.shrink(transferAmount);
-                        inventory.setItem(slot, slotStack);
-                        return true;
-                    }
-                }
+                inv.setItem(slot, heldStack.copy());
+                player.setItemInHand(InteractionHand.MAIN_HAND, slotStack.copy());
+                return true;
             }
-            return false;
         }
 
         public static LootTable getLootTable(ServerLevel level, ResourceKey<LootTable> id){
@@ -252,6 +240,12 @@ public final class Utils {
                 }
             }
         }
+        public static <T> void instanceOf(net.minecraft.world.item.Item item, Class<T> targetClass, Consumer<T> action) {
+            Object target = item instanceof BlockItem bi ? bi.getBlock() : item;
+            if (targetClass.isInstance(target)) {
+                action.accept(targetClass.cast(target));
+            }
+        }
     }
 
     public static final class Client {
@@ -279,6 +273,12 @@ public final class Utils {
         public static boolean checkAdvancement(ServerPlayer player, ResourceLocation id) {
             AdvancementHolder advancement = player.server.getAdvancements().get(id);
             return advancement != null && player.getAdvancements().getOrStartProgress(advancement).isDone();
+        }
+
+        public static void sendMessage(Player player, Component key) {
+            if (key != null) {
+                player.displayClientMessage(key, true);
+            }
         }
     }
 
@@ -382,6 +382,13 @@ public final class Utils {
         public static int dayTick(int days) {
             return hourTick(days * 24);
         }
+
+        public static float calculateProgress(float current, float max, float minOutput, float maxOutput) {
+            if (max <= 0) return minOutput;
+            float progress = current / max;
+            progress = net.minecraft.util.Mth.clamp(progress, 0.0f, 1.0f);
+            return net.minecraft.util.Mth.lerp(progress, minOutput, maxOutput);
+        }
     }
 
     public static final class Particle {
@@ -483,7 +490,7 @@ public final class Utils {
         }
 
         public static TextureAtlasSprite getSprite(ResourceLocation texture){
-            TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(BLOCK_ATLAS);
+            TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
             return atlas.getSprite(texture);
         }
     }
@@ -511,9 +518,9 @@ public final class Utils {
             return df.format(scaledNumber) + sufx[suffixIndex];
         }
 
-        public static Component addGradientText(String text, float time, int... colors) {
+        public static Component addLinerTextGradient(String text, float speed, boolean toRight, int... colors) {
             RandomSource rand = RandomSource.create(1L);
-            float offset = -((clientTick + partialTick) * rand.nextFloat() + 0.5f) * time;
+            float offset = (toRight ? -(Render.getAnimationTick() * rand.nextFloat() + 0.5f) : (Render.getAnimationTick() * rand.nextFloat() + 0.5f)) * speed;
             MutableComponent component = Component.empty();
             int length = text.length();
             if (length == 0 || colors.length == 0) return component;
@@ -537,14 +544,17 @@ public final class Utils {
             return component;
         }
 
-        public static Component addGradientText(Component text, float time, int... colors) {
-            return addGradientText(text.getString(), time, colors);
+        public static Component addTextCGradient(String text, float speed, int... colors) {
+            int color = Color.getCyclingColor(speed, colors);
+            return Component.literal(text).withColor(TextColor.fromRgb(color & 0xFFFFFF).getValue());
         }
 
-        public static void sendMessage(Player player, Component key) {
-            if (key != null) {
-                player.displayClientMessage(key, true);
-            }
+        public static Component addLinerTextGradient(Component text, float speed, boolean toRight, int... colors) {
+            return addLinerTextGradient(text.getString(), speed, toRight, colors);
+        }
+
+        public static Component addTextCGradient(Component text, float speed, int... colors) {
+            return addTextCGradient(text.getString(), speed, colors);
         }
 
         public static void addPositionTooltip(List<Component> tooltip, BlockPos pos, Component key, int colorPos, int colorData) {

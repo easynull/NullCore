@@ -1,6 +1,5 @@
 package com.mw.nullcore.core.mixin;
 
-import com.mw.nullcore.Utils;
 import com.mw.nullcore.core.managers.BiomeRulesManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
@@ -19,10 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public final class LevelMixin {
     @Inject(method = "getDayTime", at = @At("HEAD"), cancellable = true)
     private void nc$getTime(CallbackInfoReturnable<Long> cir) {
-        Level level = (Level) (Object) this;
+        Level self = (Level) (Object) this;
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
-        Holder<Biome> biome = level.getBiome(player.blockPosition());
+        Holder<Biome> biome = self.getBiome(player.blockPosition());
         ResourceLocation id = biome.unwrapKey().map(ResourceKey::location).orElse(null);
         BiomeRulesManager.getRules(id)
                 .flatMap(r -> r.getRule("fixed_time", Long.class))
@@ -31,11 +30,11 @@ public final class LevelMixin {
 
     @Inject(method = "getRainLevel", at = @At("HEAD"), cancellable = true)
     private void nc$getRain(CallbackInfoReturnable<Float> cir) {
-        Level level = (Level) (Object) this;
-        if (!(level.isClientSide())) return;
+        Level self = (Level) (Object) this;
+        if (!(self.isClientSide())) return;
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
-        Holder<Biome> biome = level.getBiome(player.blockPosition());
+        Holder<Biome> biome = self.getBiome(player.blockPosition());
         ResourceLocation id = biome.unwrapKey().map(ResourceKey::location).orElse(null);
         BiomeRulesManager.getRules(id)
                 .flatMap(r -> r.getRule("rain_force", Float.class))

@@ -12,22 +12,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Player.class)
 public final class PlayerMixin {
-    @Unique
-    private int nc$tick;
-
     @Inject(method = "tick", at = @At("HEAD"))
     private void nc$onTick(CallbackInfo ci) {
-        if (nc$tick % 40 == 0) {
-            Player player = (Player) (Object) this;
-            if(player.level().isClientSide()) return;
+        Player self = (Player) (Object) this;
+        if (self.level().getGameTime() % 40 == 0) {
+            if(self.level().isClientSide()) return;
             for (var effect : ArmorMaterialBuilder.effects.entrySet()) {
-                if (SuitItem.hasArmorSet(player, effect.getKey())) {
+                if (SuitItem.hasArmorSet(self, effect.getKey())) {
                     for (var shyEffect : effect.getValue()) {
-                        if (shyEffect.condition().test(player)) player.addEffect(new MobEffectInstance(shyEffect.effect(), shyEffect.time(), shyEffect.level(), shyEffect.visible(), shyEffect.visible()));
+                        if (shyEffect.condition().test(self)) self.addEffect(new MobEffectInstance(shyEffect.effect(), shyEffect.time(), shyEffect.level(), shyEffect.visible(), shyEffect.visible()));
                     }
                 }
             }
         }
-        nc$tick++;
     }
 }

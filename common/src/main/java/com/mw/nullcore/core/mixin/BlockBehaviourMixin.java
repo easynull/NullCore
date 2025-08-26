@@ -26,7 +26,7 @@ import static com.mw.nullcore.Utils.Client.setSafeScreen;
 @Mixin(BlockBehaviour.class)
 public final class BlockBehaviourMixin {
     @Inject(method = "onRemove", at = @At(value = "HEAD"))
-    private void nc$breaking(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston, CallbackInfo ci) {
+    private void nc$onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston, CallbackInfo ci) {
         if (!(level.getBlockEntity(pos) instanceof ContainerHave i)) return;
         if (state.getBlock() != newState.getBlock() && i.useMixinSetting()) {
             Containers.dropContents(level, pos, i.getInventory());
@@ -48,7 +48,7 @@ public final class BlockBehaviourMixin {
     }
 
     @Inject(method = "getCloneItemStack", at = @At(value = "HEAD"), cancellable = true)
-    private void nc$cloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData, CallbackInfoReturnable<ItemStack> cir) {
+    private void nc$itemClone(LevelReader level, BlockPos pos, BlockState state, boolean includeData, CallbackInfoReturnable<ItemStack> cir) {
         if (!(state.getBlock() instanceof SaveDataBlock data && state.hasBlockEntity())) return;
         BlockEntity type = level.getBlockEntity(pos);
         ItemStack stack = new ItemStack(state.getBlock().asItem());

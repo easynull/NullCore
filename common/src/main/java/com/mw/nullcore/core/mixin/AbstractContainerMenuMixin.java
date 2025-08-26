@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(AbstractContainerMenu.class)
 public final class AbstractContainerMenuMixin {
     @Inject(method = "doClick", at = @At("HEAD"))
-    private void onClick(int slotId, int button, ClickType click, Player player, CallbackInfo ci) {
+    private void nc$onClick(int slotId, int button, ClickType click, Player player, CallbackInfo ci) {
         AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
         if (slotId < 0 || (!player.isCreative() && player.level().isClientSide)) return;
         Slot slot = menu.slots.get(slotId);

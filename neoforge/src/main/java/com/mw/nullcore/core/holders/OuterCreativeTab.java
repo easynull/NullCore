@@ -1,6 +1,5 @@
 package com.mw.nullcore.core.holders;
 
-import com.mw.nullcore.NullCore;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -23,28 +22,28 @@ public final class OuterCreativeTab extends DeferredRegister<CreativeModeTab> {
         return new OuterCreativeTab(modid);
     }
 
-    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerTab(String id, Component title, Supplier<ItemStack> icon, ResourceLocation background, ItemLike... items){
-        return register(id, ()-> CreativeModeTab.builder().title(title).icon(icon).displayItems((p, o) -> {
+    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerTab(String name, Component title, Supplier<ItemStack> icon, ResourceLocation background, ItemLike... items){
+        return register(name, ()-> CreativeModeTab.builder().title(title).icon(icon).displayItems((p, o) -> {
             for (ItemLike item : items) {
                 if (item != null) o.accept(item);
             }
         }).backgroundTexture(background).build());
     }
 
-    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerSearchTab(String id, Component title, Supplier<ItemStack> icon, ResourceLocation background, ItemLike... items){
-        return register(id, ()-> CreativeModeTab.builder().title(title).icon(icon).displayItems((p, o) -> {
+    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerSearchTab(String name, Component title, Supplier<ItemStack> icon, ResourceLocation background, ItemLike... items){
+        return register(name, ()-> CreativeModeTab.builder().title(title).icon(icon).displayItems((p, o) -> {
             for (ItemLike item : items) {
                 if (item != null) o.accept(item);
             }
         }).backgroundTexture(background).withSearchBar().build());
     }
 
-    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerTab(String id, Component title, Supplier<ItemStack> icon, ItemLike... items){
-        return registerTab(id, title, icon, CreativeModeTab.createTextureLocation("items"), items);
+    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerTab(String name, Component title, Supplier<ItemStack> icon, ItemLike... items){
+        return registerTab(name, title, icon, CreativeModeTab.createTextureLocation("items"), items);
     }
 
-    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerSearchTab(String id, Component title, Supplier<ItemStack> icon, ItemLike... items){
-        return registerSearchTab(id, title, icon, CreativeModeTab.createTextureLocation("item_search"), items);
+    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerSearchTab(String name, Component title, Supplier<ItemStack> icon, ItemLike... items){
+        return registerSearchTab(name, title, icon, CreativeModeTab.createTextureLocation("item_search"), items);
     }
 
     @Override

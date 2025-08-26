@@ -12,10 +12,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class OuterItem extends DeferredRegister<Item> {
-    final String id;
+    final String modid;
     private OuterItem(String modId) {
         super(Registries.ITEM, modId);
-        this.id = modId;
+        this.modid = modId;
     }
 
     public static OuterItem create(String modId){
@@ -23,7 +23,7 @@ public final class OuterItem extends DeferredRegister<Item> {
     }
 
     public <I extends Item > DeferredItem<I> registerItem(String name, Function<Item.Properties, ? extends I> item) {
-        return register(name, () -> item.apply(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(id, name)))));
+        return register(name, () -> item.apply(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(modid, name)))));
     }
 
     @Override

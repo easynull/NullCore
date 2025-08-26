@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public final class CameraMixin {
     @Inject(method = "setup", at = @At("RETURN"))
     private void nc$onTick(BlockGetter level, Entity entity, boolean detached, boolean thirdPersonReverse, float partialTick, CallbackInfo ci) {
-        Camera cam = (Camera) (Object) this;
-        CameraShakeBuilder.tick(cam);
+        Camera self = (Camera) (Object) this;
+        CameraShakeBuilder.tick(self);
     }
 }

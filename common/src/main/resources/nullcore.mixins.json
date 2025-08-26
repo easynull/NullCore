@@ -17,8 +17,9 @@
     "BiomeMixin",
     "CameraMixin",
     "GuiGraphicsMixin",
-    "LevelMixin",
     "GuiMixin",
+    "ItemEntityMixin",
+    "LevelMixin",
     "SoundEngineMixin",
     "SoundManagerAccessor"
   ],

@@ -11,18 +11,18 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import java.util.function.Supplier;
 
 public final class OuterSound extends DeferredRegister<SoundEvent> {
-    final String id;
+    final String modid;
     private OuterSound(String namespace) {
         super(Registries.SOUND_EVENT, namespace);
-        this.id = namespace;
+        this.modid = namespace;
     }
 
     public static OuterSound create(String modId){
         return new OuterSound(modId);
     }
 
-    public <S extends SoundEvent> DeferredHolder<SoundEvent, S> registerSound(String id) {
-        return register(id, ()-> (S) SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(this.id, id)));
+    public <S extends SoundEvent> DeferredHolder<SoundEvent, S> registerSound(String name) {
+        return register(name, ()-> (S) SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(modid, name)));
     }
 
     @Override

@@ -25,13 +25,13 @@ public final class OuterCreativeTab {
         return new OuterCreativeTab(modid);
     }
 
-    public CreativeModeTab registerTab(String id, Component title, Supplier<ItemStack> icon, ResourceLocation background, ItemLike... items){
+    public CreativeModeTab registerTab(String name, Component title, Supplier<ItemStack> icon, ResourceLocation background, ItemLike... items){
         CreativeModeTab reg = FabricItemGroup.builder().title(title).icon(icon).displayItems((p, o) -> {
             for (ItemLike item : items) {
                 if (item != null) o.accept(item);
             }
         }).backgroundTexture(background).build();
-        types.put(ResourceLocation.fromNamespaceAndPath(modid, id), reg);
+        types.put(ResourceLocation.fromNamespaceAndPath(modid, name), reg);
         return reg;
     }
 

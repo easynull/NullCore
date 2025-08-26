@@ -1,5 +1,6 @@
 package com.mw.nullcore.core.mixin;
 
+import com.mw.nullcore.NullCore;
 import com.mw.nullcore.Utils;
 import com.mw.nullcore.client.NullConfig;
 import com.mw.nullcore.core.items.IconRenderer;
@@ -21,7 +22,7 @@ public final class GuiGraphicsMixin {
         if (!NullConfig.enableGuiVFX.get()) return;
         if (stack.getItem() instanceof IconRenderer item) {
             item.renderIcon(gg, level, stack, pX, pY, Utils.partialTick);
-        } else if (stack.getItem() instanceof BlockItem bi && bi instanceof IconRenderer item) {
+        } else if (stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof IconRenderer item) {
             item.renderIcon(gg, level, stack, pX, pY, Utils.partialTick);
         }
     }

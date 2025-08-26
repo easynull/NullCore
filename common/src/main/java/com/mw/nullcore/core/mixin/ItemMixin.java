@@ -1,5 +1,6 @@
 package com.mw.nullcore.core.mixin;
 
+import com.mw.nullcore.Utils;
 import com.mw.nullcore.client.screen.ScreenHave;
 import com.mw.nullcore.core.items.CustomableName;
 import com.mw.nullcore.core.multiblocks.Blueprint;
@@ -10,7 +11,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -26,14 +26,14 @@ import static com.mw.nullcore.Utils.Client.setSafeScreen;
 public final class ItemMixin {
     @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
     private void nc$useOn(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
-        Item item = (Item) ((Object) this);
+        Item self = (Item) ((Object) this);
         Level level = context.getLevel();
         Player player = context.getPlayer();
         BlockPos pos = context.getClickedPos();
         if (!level.isClientSide && player != null) {
             OuterMultiblock.multiblocks.values().stream()
-                    .filter(print -> print.getActivator() == item)
-                    .filter(print -> print.canActivate(player, level, item.getDefaultInstance()))
+                    .filter(print -> print.getActivator() == self)
+                    .filter(print -> print.canActivate(player, level, self.getDefaultInstance()))
                     .findFirst().ifPresent(print -> {
                         Blueprint.Structure structure = print.getStructure(level, pos);
                         if (structure != null) {
@@ -57,13 +57,9 @@ public final class ItemMixin {
     }
 
     @Inject(method = "getName(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/network/chat/Component;", at = @At("TAIL"), cancellable = true)
-    private void nc$customName(ItemStack stack, CallbackInfoReturnable<Component> cir) {
-        Item item = (Item) ((Object) this);
+    private void nc$getName(ItemStack stack, CallbackInfoReturnable<Component> cir) {
+        Item self = (Item) ((Object) this);
         String name = cir.getReturnValue().getString();
-        if (item instanceof BlockItem bi && bi.getBlock() instanceof CustomableName custom) {
-            cir.setReturnValue(custom.getItemName(name, stack));
-        } else if (item instanceof CustomableName custom) {
-            cir.setReturnValue(custom.getItemName(name, stack));
-        }
+        Utils.Item.instanceOf(self, CustomableName.class, item -> cir.setReturnValue(item.getItemName(name, stack)));
     }
 }

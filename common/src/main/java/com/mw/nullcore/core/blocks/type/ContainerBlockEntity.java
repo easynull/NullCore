@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.SimpleContainer;
@@ -15,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import com.mw.nullcore.Utils;
 import net.minecraft.world.entity.player.Player;
 
-public abstract class ContainerBlockEntity extends BlockEntity implements ContainerHave {
+public abstract class ContainerBlockEntity extends BlockEntity implements ContainerHave, Container {
     public final SimpleContainer inventory;
     public final int maxInSlot;
 
@@ -64,6 +65,7 @@ public abstract class ContainerBlockEntity extends BlockEntity implements Contai
         return inventory.getItem(0).copy();
     }
 
+    @Override
     public SimpleContainer getInventory() {
         return inventory;
     }
@@ -72,25 +74,34 @@ public abstract class ContainerBlockEntity extends BlockEntity implements Contai
         return inventory.getContainerSize();
     }
 
+    @Override
     public boolean isEmpty() {
         return inventory.isEmpty();
     }
 
+    @Override
     public ItemStack getItem(int slot) {
         return inventory.getItem(slot);
     }
 
+    @Override
     public ItemStack removeItem(int slot, int amount) {
         ItemStack stack = inventory.removeItem(slot, amount);
         setChanged();
         return stack;
     }
 
+    @Override
     public void setItem(int slot, ItemStack stack) {
         inventory.setItem(slot, stack);
         setChanged();
     }
 
+    public void setFirst(ItemStack stack) {
+        setItem(0, stack);
+    }
+
+    @Override
     public boolean stillValid(Player player) {
         return Container.stillValidBlockEntity(this, player);
     }

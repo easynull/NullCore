@@ -8,10 +8,7 @@ import com.mw.nullcore.NullCore;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.mw.nullcore.Utils.Reader.addValueToJson;
 import static com.mw.nullcore.Utils.Reader.parseJsonValue;
@@ -30,7 +27,7 @@ public final class ConfigManager {
     public static <V> Initialize.Unit<V> create(String key, String comment, V defaultValue) {
         Initialize.Unit<V> unit = Initialize.Unit.of(key, comment, defaultValue);
         INSTANCE.config.put(key, unit);
-        variables.put(INSTANCE.modid, Set.of(unit));
+        variables.computeIfAbsent(INSTANCE.modid, k -> new HashSet<>()).add(unit);
         return unit;
     }
 
@@ -38,12 +35,16 @@ public final class ConfigManager {
         return (Initialize.Unit<V>) INSTANCE.config.get(key);
     }
 
-    public static <V> void set(String key, V value) {
-        Initialize.Unit<V> unit = getUnit(key);
+    public static <V> void set(Initialize.Unit<V> unit, V value) {
         if (unit != null) {
-            INSTANCE.config.put(key, Initialize.Unit.of(key, unit.comment(), value));
+            INSTANCE.config.put(unit.name(), unit);
             unit.set(value);
+            INSTANCE.save();
         }
+    }
+
+    public static <V> void set(String key, V value) {
+        set(getUnit(key), value);
     }
 
     public static final class Initialize {
@@ -89,12 +90,18 @@ public final class ConfigManager {
 
         void save() {
             JsonObject json = new JsonObject();
-            config.forEach((key, unit) -> {
-                json.addProperty("_" + key + "_comment", unit.comment());
+            List<String> keys = new ArrayList<>(config.keySet());
+
+            for (String key : keys) {
+                Unit<?> unit = config.get(key);
+                json.addProperty("comment_" + key, unit.comment());
                 addValueToJson(json, key, unit.get());
-            });
+            }
+
             try {
-                Files.writeString(configPath, new GsonBuilder().setPrettyPrinting().create().toJson(json));
+                String jsonString = new GsonBuilder().setPrettyPrinting().create().toJson(json);
+                jsonString = jsonString.replaceAll("(\": [^,]+,\\n)(\\s+\"comment_)", "$1  \n$2");
+                Files.writeString(configPath, jsonString);
             } catch (Exception e) {
                 NullCore.LOG.error("Failed to save config: {}", e.getMessage());
             }
