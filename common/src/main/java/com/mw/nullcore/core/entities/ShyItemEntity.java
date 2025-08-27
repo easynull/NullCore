@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-public final class ShyItemEntity extends ItemEntity {
+public class ShyItemEntity extends ItemEntity {
     static final EntityDataAccessor<Boolean> canRays = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.BOOLEAN), canParticle = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.BOOLEAN);
     static final EntityDataAccessor<Integer> color = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.INT), countParticle = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.INT);
     static final EntityDataAccessor<ParticleOptions> particle = SynchedEntityData.defineId(ShyItemEntity.class, EntityDataSerializers.PARTICLE);
@@ -81,19 +81,19 @@ public final class ShyItemEntity extends ItemEntity {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
-        super.addAdditionalSaveData(compound);
-        compound.putBoolean("canRays", getRays().getFirst());
-        compound.putInt("color", getRays().getSecond());
-        compound.putBoolean("canParticle", entityData.get(canParticle));
-        compound.putInt("countParticle", entityData.get(countParticle));
-        Utils.Particle.writeParticle(compound, getParticle());
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putBoolean("canRays", getRays().getFirst());
+        tag.putInt("color", getRays().getSecond());
+        tag.putBoolean("canParticle", entityData.get(canParticle));
+        tag.putInt("countParticle", entityData.get(countParticle));
+        Utils.Particle.writeParticle(tag, getParticle());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
-        super.readAdditionalSaveData(compound);
-        setRays(compound.getBoolean("canRays"), compound.getInt("color"));
-        setParticle(compound.getBoolean("canParticle"), Utils.Particle.readParticle(compound), compound.getInt("countParticle"));
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        setRays(tag.getBoolean("canRays"), tag.getInt("color"));
+        setParticle(tag.getBoolean("canParticle"), Utils.Particle.readParticle(tag), tag.getInt("countParticle"));
     }
 }

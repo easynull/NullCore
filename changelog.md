@@ -1,3 +1,2 @@
-### - Added command for config
-### - Fixed command builder
+### - Added entity block with animation
 ### - Fixed bugs

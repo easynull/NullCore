@@ -20,16 +20,6 @@ public final class ShyItemRender extends ItemEntityRenderer {
     }
 
     @Override
-    public void extractRenderState(ItemEntity entity, ItemEntityRenderState state, float pTick) {
-        if(state instanceof ShyItemState aState && entity instanceof ShyItemEntity aEntity){
-            aState.raysEnabled = aEntity.getRays().getFirst();
-            aState.color = aEntity.getRays().getSecond();
-            aState.pTick = pTick;
-        }
-        super.extractRenderState(entity, state, pTick);
-    }
-
-    @Override
     public void render(ItemEntityRenderState state, PoseStack ps, MultiBufferSource mBuffer, int light) {
         super.render(state, ps, mBuffer, light);
         if(state instanceof ShyItemState aState && !state.item.isEmpty()) {
@@ -42,6 +32,16 @@ public final class ShyItemRender extends ItemEntityRenderer {
                 ps.popPose();
             }
         }
+    }
+
+    @Override
+    public void extractRenderState(ItemEntity entity, ItemEntityRenderState state, float pTick) {
+        if(state instanceof ShyItemState aState && entity instanceof ShyItemEntity aEntity){
+            aState.raysEnabled = aEntity.getRays().getFirst();
+            aState.color = aEntity.getRays().getSecond();
+            aState.pTick = pTick;
+        }
+        super.extractRenderState(entity, state, pTick);
     }
 
     @Override

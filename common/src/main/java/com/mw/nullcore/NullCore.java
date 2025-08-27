@@ -1,5 +1,6 @@
 package com.mw.nullcore;
 
+import com.mw.nullcore.client.render.ShyBlockRender;
 import com.mw.nullcore.client.render.ShyItemRender;
 import com.mw.nullcore.registers.NullComponents;
 import com.mw.nullcore.registers.NullEntities;
@@ -37,5 +38,6 @@ public final class NullCore {
 
 	public static void registerEntityRenderers(BiConsumer<EntityType<? extends Entity>, EntityRendererProvider> consumer) {
 		consumer.accept(NullEntities.shyItem.get(), ShyItemRender::new);
+        consumer.accept(NullEntities.shyBlock.get(), ShyBlockRender::new);
 	}
 }
