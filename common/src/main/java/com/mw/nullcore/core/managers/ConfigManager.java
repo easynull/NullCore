@@ -190,6 +190,8 @@ public final class ConfigManager {
                     return (V) Double.valueOf(value);
                 } else if (get() instanceof String) {
                     return (V) value;
+                } else if (get() instanceof List<?>) {
+                    return (V) Arrays.asList(value.split("\\s*,\\s*"));
                 }
                 return null;
             }

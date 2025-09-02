@@ -1,13 +1,16 @@
 package com.mw.nullcore;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mw.nullcore.client.audio.TrackerController;
+import com.mw.nullcore.client.render.ShyModel;
 import com.mw.nullcore.core.blocks.type.ContainerBlockEntity;
 import com.mw.nullcore.core.builders.ArmorMaterialBuilder;
 import com.mw.nullcore.platform.Platform;
@@ -27,7 +30,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -49,6 +51,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -57,12 +60,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
 import java.text.DecimalFormat;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -342,9 +345,27 @@ public final class Utils {
             }
             return getCyclingColor(speed, rainbow);
         }
+
+        public static float getRed(int color) {
+            return (color >> 16 & 0xFF) / 255.0F;
+        }
+
+        public static float getGreen(int color) {
+            return (color >> 8 & 0xFF) / 255.0F;
+        }
+
+        public static float getBlue(int color) {
+            return (color & 0xFF) / 255.0F;
+        }
+
+        public static float getAlpha(int color) {
+            return (color >> 24 & 0xFF) / 255.0F;
+        }
     }
 
     public static final class Mth {
+        public static final Vector3f VZERO = new Vector3f(0, 0, 0);
+
         public static boolean chance(float chance) {
             return rand.nextFloat() < net.minecraft.util.Mth.clamp(chance, 0, (byte) 1);
         }
@@ -486,6 +507,106 @@ public final class Utils {
             ps.popPose();
         }
 
+        private static Vector3f withValue(Vector3f vector, Direction.Axis axis, float value) {
+            if (axis == Direction.Axis.X) {
+                return new Vector3f(value, vector.y(), vector.z());
+            } else if (axis == Direction.Axis.Y) {
+                return new Vector3f(vector.x(), value, vector.z());
+            } else if (axis == Direction.Axis.Z) {
+                return new Vector3f(vector.x(), vector.y(), value);
+            }
+            throw new RuntimeException("Was given a null axis! That was probably not intentional, consider this a bug! (Vector = " + vector + ")");
+        }
+
+        public static double getValue(Vec3 vector, Direction.Axis axis) {
+            if (axis == Direction.Axis.X) {
+                return vector.x;
+            } else if (axis == Direction.Axis.Y) {
+                return vector.y;
+            } else if (axis == Direction.Axis.Z) {
+                return vector.z;
+            }
+            throw new RuntimeException("Was given a null axis! That was probably not intentional, consider this a bug! (Vector = " + vector + ")");
+        }
+
+        private static final int U0 = 0;
+        private static final int U1 = 1;
+        private static final int V0 = 2;
+        private static final int V1 = 3;
+        public static void renderCube(ShyModel cube, PoseStack ps, VertexConsumer buffer, int argb, int light, int overlay) {
+            float red = Color.getRed(argb);
+            float green = Color.getGreen(argb);
+            float blue = Color.getBlue(argb);
+            float alpha = Color.getAlpha(argb);
+            Vec3 size = new Vec3(cube.sizeX(), cube.sizeY(), cube.sizeZ());
+            ps.pushPose();
+            ps.translate(cube.getMinX(), cube.getMinY(), cube.getMinZ());
+            PoseStack.Pose pose = ps.last();
+            Matrix4f mat = pose.pose();
+            for (Direction face : Direction.values()) {
+                if (cube.shouldSideRender(face)) {
+                    int ordinal = face.ordinal();
+                    TextureAtlasSprite sprite = cube.textures[ordinal];
+                    if (sprite != null) {
+                        Direction.Axis u = face.getAxis() == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
+                        Direction.Axis v = face.getAxis() == Direction.Axis.Y ? Direction.Axis.Z : Direction.Axis.Y;
+                        float other = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? (float) getValue(size, face.getAxis()) : 0;
+
+                        face = face.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? face : face.getOpposite();
+                        Direction opposite = face.getOpposite();
+
+                        float minU = sprite.getU0();
+                        float maxU = sprite.getU1();
+                        float minV = sprite.getV1();
+                        float maxV = sprite.getV0();
+                        double sizeU = getValue(size, u);
+                        double sizeV = getValue(size, v);
+                        for (int uIndex = 0; uIndex < sizeU; uIndex++) {
+                            float[] baseUV = new float[] { minU, maxU, minV, maxV };
+                            double addU = 1;
+                            if (uIndex + addU > sizeU) {
+                                addU = sizeU - uIndex;
+                                baseUV[U1] = baseUV[U0] + (baseUV[U1] - baseUV[U0]) * (float) addU;
+                            }
+                            for (int vIndex = 0; vIndex < sizeV; vIndex++) {
+                                float[] uv = Arrays.copyOf(baseUV, 4);
+                                double addV = 1;
+                                if (vIndex + addV > sizeV) {
+                                    addV = sizeV - vIndex;
+                                    uv[V1] = uv[V0] + (uv[V1] - uv[V0]) * (float) addV;
+                                }
+                                float[] xyz = new float[] { uIndex, (float) (uIndex + addU), vIndex, (float) (vIndex + addV) };
+
+                                renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, true, false, red, green, blue, alpha, light, overlay);
+                                renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, true, true, red, green, blue, alpha, light, overlay);
+                                renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, false, true, red, green, blue, alpha, light, overlay);
+                                renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, false, false, red, green, blue, alpha, light, overlay);
+
+                                renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, false, false, red, green, blue, alpha, light, overlay);
+                                renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, false, true, red, green, blue, alpha, light, overlay);
+                                renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, true, true, red, green, blue, alpha, light, overlay);
+                                renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, true, false, red, green, blue, alpha, light, overlay);
+                            }
+                        }
+                    }
+                }
+            }
+            ps.popPose();
+        }
+
+        public static void renderPoint(Matrix4f matrix4f, PoseStack.Pose normal, VertexConsumer buffer, Direction face, Direction.Axis u, Direction.Axis v, float other, float[] uv, float[] xyz, boolean minU, boolean minV, float red, float green, float blue, float alpha, int light, int overlay) {
+            int U_ARRAY = minU ? U0 : U1;
+            int V_ARRAY = minV ? V0 : V1;
+            Vector3f vertex = withValue(Mth.VZERO, u, xyz[U_ARRAY]);
+            vertex = withValue(vertex, v, xyz[V_ARRAY]);
+            vertex = withValue(vertex, face.getAxis(), other);
+            Vec3i normalForFace = face.getUnitVec3i();
+            float adjustment = 2.5F;
+            Vector3f norm = new Vector3f(normalForFace.getX() + adjustment, normalForFace.getY() + adjustment, normalForFace.getZ() + adjustment);
+            norm.normalize();
+            buffer.addVertex(matrix4f, vertex.x(), vertex.y(), vertex.z()).setColor(red, green, blue, alpha).setUv(uv[U_ARRAY], uv[V_ARRAY]).setOverlay(overlay).setUv2(light, light).setNormal(normal, norm.x(), norm.y(), norm.z());
+        }
+
         public static float getAnimationTick(float pTick) {
             return pTick + clientTick;
         }
@@ -497,6 +618,10 @@ public final class Utils {
         public static TextureAtlasSprite getSprite(ResourceLocation texture) {
             TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
             return atlas.getSprite(texture);
+        }
+
+        public static TextureAtlasSprite getSpriteOf(ResourceLocation texture) {
+            return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
         }
     }
 
@@ -623,18 +748,72 @@ public final class Utils {
             if (defaultValue instanceof Float) return element.getAsFloat();
             if (defaultValue instanceof String) return element.getAsString();
             if (defaultValue instanceof Character) return element.getAsCharacter();
+            if (defaultValue instanceof List) return parseList(element.getAsJsonArray(), (List<?>) defaultValue);
             return null;
         }
 
         public static void addValueToJson(JsonObject json, String key, Object value) {
-            if (value instanceof Boolean) {
-                json.addProperty(key, (Boolean) value);
-            } else if (value instanceof Number) {
-                json.addProperty(key, (Number) value);
-            } else if (value instanceof String) {
-                json.addProperty(key, (String) value);
-            } else if (value instanceof Character) {
-                json.addProperty(key, (Character) value);
+            if (value instanceof Boolean v) {
+                json.addProperty(key, v);
+            } else if (value instanceof Number v) {
+                json.addProperty(key, v);
+            } else if (value instanceof String v) {
+                json.addProperty(key, v);
+            } else if (value instanceof Character v) {
+                json.addProperty(key, v);
+            } else if (value instanceof List<?> list) {
+                JsonArray array = new JsonArray();
+                for (Object item : list) {
+                    addItemToJsonArray(array, item);
+                }
+                json.add(key, array);
+            }
+        }
+
+        public static List<Object> parseList(JsonArray array, List<?> list) {
+            List<Object> result = new ArrayList<>();
+            if (array == null || array.isEmpty()) {
+                return result;
+            }
+            if (!list.isEmpty()) {
+                Object firstElement = list.getFirst();
+                for (JsonElement element : array) {
+                    result.add(parseJsonValue(element, firstElement));
+                }
+            } else {
+                for (JsonElement element : array) {
+                    if (element.isJsonPrimitive()) {
+                        JsonPrimitive primitive = element.getAsJsonPrimitive();
+                        if (primitive.isBoolean()) {
+                            result.add(primitive.getAsBoolean());
+                        } else if (primitive.isNumber()) {
+                            result.add(primitive.getAsNumber());
+                        } else if (primitive.isString()) {
+                            result.add(primitive.getAsString());
+                        }
+                    } else {
+                        result.add(element.toString());
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static void addItemToJsonArray(JsonArray array, Object item) {
+            if (item instanceof Boolean v) {
+                array.add(v);
+            } else if (item instanceof Number v) {
+                array.add(v);
+            } else if (item instanceof String v) {
+                array.add(v);
+            } else if (item instanceof Character v) {
+                array.add(v);
+            } else if (item instanceof List<?> v) {
+                JsonArray nestedArray = new JsonArray();
+                for (Object nestedItem : v) {
+                    addItemToJsonArray(nestedArray, nestedItem);
+                }
+                array.add(nestedArray);
             }
         }
     }

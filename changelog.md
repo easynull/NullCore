@@ -1,2 +1,4 @@
-### - Added entity block with animation
+### - Added shy model
+### - Updated config parsing
+### - Updated utils
 ### - Fixed bugs
