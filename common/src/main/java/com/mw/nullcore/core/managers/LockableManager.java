@@ -3,6 +3,7 @@ package com.mw.nullcore.core.managers;
 import com.google.gson.*;
 import com.mw.nullcore.Utils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,19 +16,19 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.mw.nullcore.NullCore.LOG;
-import static com.mw.nullcore.Utils.Client.checkAdvancement;
+import static com.mw.nullcore.Utils.Client.hasAdvancement;
 
 public final class LockableManager extends SimplePreparableReloadListener<Map<ResourceLocation, LockableManager.LockableEntry>> {
     public static final Map<ResourceLocation, LockableEntry> selfLockable = new HashMap<>();
@@ -83,8 +84,8 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
     private static LockableEntry parseLockableEntry(JsonObject json) {
         boolean lock = false;
         if(json.has("lock")){
-            JsonObject requiredObj = json.getAsJsonObject("lock");
-            lock = requiredObj.getAsBoolean();
+            JsonObject lockObj = json.getAsJsonObject("lock");
+            lock = lockObj.getAsBoolean();
         }
         RequiredCondition required = null;
         if (json.has("required")) {
@@ -93,29 +94,40 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
             required = new RequiredCondition(advancement);
         }
         Component message = null;
+        SoundEvent soundMessage = null;
         if (json.has("message")) {
             JsonElement messageElem = json.get("message");
-            if (messageElem.isJsonObject()) {
-                JsonObject ms = messageElem.getAsJsonObject();
+            JsonObject ms = messageElem.getAsJsonObject();
+            if (ms.has("text")) {
                 String text = ms.get("text").getAsString();
                 message = Component.translatable(text);
                 if (ms.has("color")) {
                     JsonElement color = ms.get("color");
                     message = message.copy().withColor(color.getAsJsonPrimitive().isNumber() ? color.getAsInt() : Utils.Color.hexPack(color.getAsString()));
                 }
-            } else {
-                message = Component.translatable(messageElem.getAsString());
+            }
+            if (ms.has("sound")) {
+                ResourceLocation soundId = ResourceLocation.tryParse(ms.get("sound").getAsString());
+                if (soundId != null) {
+                    soundMessage = BuiltInRegistries.SOUND_EVENT.getValue(soundId);
+                }
             }
         }
-        SoundEvent soundMessage = null;
-        if (json.has("sound_message")) {
-            ResourceLocation soundId = ResourceLocation.tryParse(json.get("sound_message").getAsString());
-            if (soundId != null) {
-                soundMessage = BuiltInRegistries.SOUND_EVENT.getValue(soundId);
+        Set<Holder<MobEffect>> effects = null;
+        if (json.has("effects")) {
+            effects = new HashSet<>();
+            JsonArray effectArray = json.getAsJsonArray("effects");
+            for (JsonElement element : effectArray) {
+                ResourceLocation effectId = ResourceLocation.tryParse(element.getAsString());
+                if (effectId != null) {
+                    Holder<MobEffect> effect = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(BuiltInRegistries.MOB_EFFECT.getValue(effectId));
+                    effects.add(effect);
+                }
             }
         }
-        List<Item> ignoreItems = new ArrayList<>();
+        Set<Item> ignoreItems = null;
         if (json.has("ignore")) {
+            ignoreItems = new HashSet<>();
             JsonArray ignoreArray = json.getAsJsonArray("ignore");
             for (JsonElement element : ignoreArray) {
                 ResourceLocation itemId = ResourceLocation.tryParse(element.getAsString());
@@ -125,7 +137,7 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
                 }
             }
         }
-        return new LockableEntry(lock, required, message, soundMessage, ignoreItems);
+        return new LockableEntry(lock, required, message, soundMessage, effects, ignoreItems);
     }
 
     public static boolean canBlocked(ServerPlayer player, InteractionHand hand, BlockPos pos, ServerLevel level) {
@@ -136,7 +148,7 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
                 if (!entry.lock()) {
                     RequiredCondition required = entry.required();
                     if (required == null) return false;
-                    if (!checkAdvancement(player, required.advancement())) {
+                    if (!hasAdvancement(player, required.advancement())) {
                         if (entry.ignoreItems() != null && !entry.ignoreItems().contains(itemInHand.getItem())) {
                             sendLockMessage(player, entry, level);
                             return true;
@@ -163,6 +175,6 @@ public final class LockableManager extends SimplePreparableReloadListener<Map<Re
         }
     }
 
-    public record LockableEntry(boolean lock, RequiredCondition required, Component message, SoundEvent soundMessage, List<Item> ignoreItems) {}
+    public record LockableEntry(boolean lock, RequiredCondition required, Component message, SoundEvent soundMessage, Set<Holder<MobEffect>> effects, Set<Item> ignoreItems) {}
     public record RequiredCondition(ResourceLocation advancement) {}
 }

@@ -53,41 +53,14 @@ public final class TracksManager extends SimplePreparableReloadListener<Map<Reso
         Map<ResourceLocation, HashSet<Track>> tracks = new HashMap<>();
         try {
             JsonObject root = JsonParser.parseString(json).getAsJsonObject();
-            if (root.has("dimensions")) {
-                JsonObject dimensions = root.getAsJsonObject("dimensions");
-                for (Map.Entry<String, JsonElement> entry : dimensions.entrySet()) {
-                    ResourceLocation id = ResourceLocation.tryParse(entry.getKey());
-                    if (id == null) {
-                        LOG.warn("Invalid dim ID: {}", entry.getKey());
-                        continue;
-                    }
-                    HashSet<Track> selfTracks = parseTrackList(entry.getValue().getAsJsonArray());
-                    tracks.put(id, selfTracks);
+            for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
+                ResourceLocation id = ResourceLocation.tryParse(entry.getKey());
+                if (id == null) {
+                    LOG.warn("Invalid element ID: {}", entry.getKey());
+                    continue;
                 }
-            }
-//            if (root.has("structures")) {
-//                JsonObject structures = root.getAsJsonObject("structures");
-//                for (Map.Entry<String, JsonElement> entry : structures.entrySet()) {
-//                    ResourceLocation id = ResourceLocation.tryParse(entry.getKey());
-//                    if (id == null) {
-//                        LOG.warn("Invalid structure ID: {}", entry.getKey());
-//                        continue;
-//                    }
-//                    HashSet<Track> selfLockable = parseTrackList(entry.getValue().getAsJsonArray());
-//                    tracks.put(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath()), selfLockable);
-//                }
-//            }
-            if (root.has("mobs")) {
-                JsonObject structures = root.getAsJsonObject("mobs");
-                for (Map.Entry<String, JsonElement> entry : structures.entrySet()) {
-                    ResourceLocation id = ResourceLocation.tryParse(entry.getKey());
-                    if (id == null) {
-                        LOG.warn("Invalid entity ID: {}", entry.getKey());
-                        continue;
-                    }
-                    HashSet<Track> selfTracks = parseTrackList(entry.getValue().getAsJsonArray());
-                    tracks.put(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath()), selfTracks);
-                }
+                HashSet<Track> selfTracks = parseTrackList(entry.getValue().getAsJsonArray());
+                tracks.put(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath()), selfTracks);
             }
         } catch (Exception e) {
             LOG.error("Failed to parse tracks JSON: {}", e.getMessage());

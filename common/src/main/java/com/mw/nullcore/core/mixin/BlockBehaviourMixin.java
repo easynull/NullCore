@@ -1,6 +1,8 @@
 package com.mw.nullcore.core.mixin;
 
 import com.mw.nullcore.client.screen.ScreenHave;
+import com.mw.nullcore.core.blocks.type.LockableRegion;
+import com.mw.nullcore.core.managers.LockableManager;
 import com.mw.nullcore.registers.NullComponents;
 import com.mw.nullcore.core.blocks.MenuHave;
 import com.mw.nullcore.core.blocks.SaveDataBlock;
@@ -27,6 +29,9 @@ import static com.mw.nullcore.Utils.Client.setSafeScreen;
 public final class BlockBehaviourMixin {
     @Inject(method = "onRemove", at = @At(value = "HEAD"))
     private void nc$onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston, CallbackInfo ci) {
+        if (level.getBlockEntity(pos) instanceof LockableRegion l) {
+            l.getLockable(pos, state).forEach((id, entry) -> LockableManager.selfLockable.remove(id));
+        }
         if (!(level.getBlockEntity(pos) instanceof ContainerHave i)) return;
         if (state.getBlock() != newState.getBlock() && i.useMixinSetting()) {
             Containers.dropContents(level, pos, i.getInventory());

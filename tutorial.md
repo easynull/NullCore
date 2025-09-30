@@ -7,10 +7,10 @@
 >>
 >> PS: If you are using vanilla dimension, please note that the original background music will stop playing in these places
 > ```json
-> "dimensions": {
+> {
 >   "minecraft:nether": [
 >     {
->       "sound": "modid:music.hell", //resourse location SoundEvent
+>       "sound": "modid:music.hell", //ResourceLocation SoundEvent
 >       "min_delay": 1000, //min tick
 >       "max_delay": 2000 //max tick
 >     }
@@ -20,10 +20,10 @@
 >
 >>Set music for specific mobs:
 > ```json
-> "mobs": {
+> {
 >   "minecraft:zombie": [
 >     {
->       "sound": "modid:music.zombiebossfight", //resourse location SoundEvent
+>       "sound": "modid:music.zombiebossfight", //ResourceLocation SoundEvent
 >       "min_delay": 100, //min tick before the start
 >       "max_delay": 200 //max tick before the start
 >     }
@@ -59,8 +59,9 @@
 >   "message": { //An optional parameter. Message when trying to change a blocked region
 >     "text": "lock.mymod.pyramid",
 >     "color": "#FF5733" // There is support for both HEX and INT Color
+>     "sound": "minecraft:entity.villager.no", //An optional parameter. Sound when trying to change a blocked region
 >   },
->     "sound_message": "minecraft:entity.villager.no", //An optional parameter. Sound when trying to change a blocked region
+>     "effects": ["minecraft:luck", "minecraft:regeneration"] //An optional parameter. List effects give in a blocked region
 >     "ignore": ["minecraft:golden_pickaxe", "minecraft:iron_pickaxe"] //An optional parameter. Table of exceptions that can be used in a blocked region
 >   }
 > }

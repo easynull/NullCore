@@ -24,7 +24,7 @@ public final class FabricNullCore implements ModInitializer {
         NullCore.init();
         NullCore.registerEntityRenderers(EntityRendererRegistry::register);
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new BiomeRulesFabric());
-        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new TracksFabric());
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new TracksFabric());
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new LockableFabric());
         ClientTickEvents.END_CLIENT_TICK.register(mc -> Utils.Client.tickClient());
         NullConfig.initialize(FabricLoader.getInstance().getConfigDir());

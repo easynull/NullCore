@@ -51,7 +51,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -274,7 +273,7 @@ public final class Utils {
             }
         }
 
-        public static boolean checkAdvancement(ServerPlayer player, ResourceLocation id) {
+        public static boolean hasAdvancement(ServerPlayer player, ResourceLocation id) {
             AdvancementHolder advancement = player.server.getAdvancements().get(id);
             return advancement != null && player.getAdvancements().getOrStartProgress(advancement).isDone();
         }

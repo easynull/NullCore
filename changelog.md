@@ -1,4 +1,3 @@
-### - Added shy model
-### - Updated config parsing
-### - Updated utils
-### - Fixed bugs
+- Updated Lockable
+- Added new components
+- Fixed bugs

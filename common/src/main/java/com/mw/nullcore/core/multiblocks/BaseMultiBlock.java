@@ -85,7 +85,7 @@ public class BaseMultiBlock implements Blueprint {
     }
 
     @Override
-    public void onBuilt(Level level, BlockPos startPos, Structure structure, Object... other) {
+    public void onBuilt(Level level, BlockPos startPos, Structure structure) {
         if (structure == null) return;
         BlockPos p2 = startPos.offset(structure.xOffset(), structure.yOffset(), structure.zOffset());
         for (int y = 0; y < ySize; ++y) {

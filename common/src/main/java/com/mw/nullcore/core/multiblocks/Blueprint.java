@@ -17,7 +17,7 @@ public interface Blueprint {
 
     Direction validateStructure(Level level, BlockPos centerPos);
 
-    void onBuilt(Level level, BlockPos startPos, Structure structure, Object... other);
+    void onBuilt(Level level, BlockPos startPos, Structure structure);
 
     Structure getStructure(Level level, BlockPos centerPos);
 

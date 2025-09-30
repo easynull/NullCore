@@ -71,7 +71,7 @@ public abstract class ContainerBlockEntity extends BlockEntity implements Contai
     }
 
     public ItemStack getFirst() {
-        return inventory.getItem(0).copy();
+        return inventory.getItem(0);
     }
 
     @Override
