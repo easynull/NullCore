@@ -1,0 +1,29 @@
+{
+  "required": true,
+  "package": "com.mw.nullcore.core.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "mixins": [
+    "AbstractContainerMenuMixin",
+    "BlockBehaviourMixin",
+    "BlockMixin",
+    "GameModeMixin",
+    "ItemEntityMixin",
+    "ItemMixin",
+    "MobMixin",
+    "PlayerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "BiomeMixin",
+    "LevelMixin",
+    "CameraMixin",
+    "GuiGraphicsMixin",
+    "GuiMixin",
+    "MinecraftMixin",
+    "SoundEngineMixin",
+    "SoundManagerAccessor"
+  ]
+}

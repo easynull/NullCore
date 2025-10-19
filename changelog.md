@@ -1,3 +1,3 @@
-- Updated Lockable
-- Added new components
+- Updated Tracks (work in dungeons)
+- Added screen particle (beta)
 - Fixed bugs

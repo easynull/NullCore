@@ -1,15 +1,82 @@
 plugins {
-    id 'fabric-loom' version '1.11-SNAPSHOT' apply false
-    id 'net.neoforged.moddev' version '2.0.62-beta' apply false
-    id 'net.darkhax.curseforgegradle' version '1.1.18' apply(false)
-    id "com.modrinth.minotaur" version "2.+" apply(false)
+    id 'java-library'
+    id 'net.neoforged.moddev' version '1.0.21'
 }
 
-subprojects {
-    configurations.configureEach {
-        resolutionStrategy {
-            cacheChangingModulesFor 60, 'seconds'
-            cacheDynamicVersionsFor 60, 'seconds'
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group
+
+repositories {
+    mavenLocal()
+}
+
+base {
+    archivesName = name + "-${minecraft_version}"
+}
+
+neoForge {
+    version = neo_version
+    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+    runs {
+        configureEach {
+            systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
+            ideName = "NeoForge ${it.name.capitalize()} (${project.path})"
         }
+        client {
+            client()
+        }
+    }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
+
+idea {
+    module {
+        downloadSources = false
+        downloadJavadoc = true
     }
 }

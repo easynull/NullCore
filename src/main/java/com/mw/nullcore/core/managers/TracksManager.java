@@ -1,0 +1,88 @@
+package com.mw.nullcore.core.managers;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
+import com.mw.nullcore.client.audio.Track;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
+import static com.mw.nullcore.NullCore.LOGGER;
+
+public final class TracksManager extends SimplePreparableReloadListener<Map<ResourceLocation, HashSet<Track>>> {
+    public static final Map<ResourceLocation, HashSet<Track>> selfTracks = new HashMap<>();
+
+    @Override
+    public Map<ResourceLocation, HashSet<Track>> prepare(ResourceManager manager, ProfilerFiller profiler) {
+        Map<ResourceLocation, HashSet<Track>> allTracks = new HashMap<>();
+        Map<ResourceLocation, Resource> resources = manager.listResources("level", id -> id.getPath().endsWith("tracks.json"));
+        for (Map.Entry<ResourceLocation, Resource> entry : resources.entrySet()) {
+            try (InputStream stream = entry.getValue().open()) {
+                String jsonContent = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                Map<ResourceLocation, HashSet<Track>> parsedTracks = parseTracks(jsonContent);
+
+                parsedTracks.forEach((id, tracks) -> allTracks.merge(id, tracks, (oldTracks, newTracks) -> {
+                    HashSet<Track> merged = new HashSet<>(oldTracks);
+                    merged.addAll(newTracks);
+                    return merged;
+                }));
+            } catch (Exception e) {
+                LOGGER.info("Failed to load tracks from {}: {}", entry.getKey(), e.getMessage());
+            }
+        }
+        return allTracks;
+    }
+
+    @Override
+    public void apply(@NotNull Map<ResourceLocation, HashSet<Track>> allTracks, ResourceManager manager, ProfilerFiller profiler) {
+        selfTracks.clear();
+        selfTracks.putAll(allTracks);
+    }
+
+    public static Map<ResourceLocation, HashSet<Track>> parseTracks(String json) {
+        Map<ResourceLocation, HashSet<Track>> tracks = new HashMap<>();
+        try {
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
+                ResourceLocation id = ResourceLocation.tryParse(entry.getKey());
+                if (id == null) {
+                    LOGGER.warn("Invalid element ID: {}", entry.getKey());
+                    continue;
+                }
+                HashSet<Track> selfTracks = parseTrackList(entry.getValue().getAsJsonArray());
+                tracks.put(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath()), selfTracks);
+            }
+        } catch (Exception e) {
+            LOGGER.info("Failed to parse tracks JSON: {}", e.getMessage());
+        }
+        return tracks;
+    }
+
+    private static HashSet<Track> parseTrackList(JsonArray array) {
+        HashSet<Track> tracks = new HashSet<>();
+        for (JsonElement element : array) {
+            try {
+                DataResult<Track> result = Track.codec.parse(JsonOps.INSTANCE, element);
+                if (result.result().isPresent()) {
+                    tracks.add(result.result().get());
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Failed to parse track element: {}", element, e);
+            }
+        }
+        return tracks;
+    }
+}
