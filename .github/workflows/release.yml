@@ -3,7 +3,7 @@ name: Release Mod
 on:
   workflow_dispatch:
   push:
-    branches: [ "1.21.4" ]
+    branches: [ "1.21.4-neo" ]
 
 permissions:
   contents: write
@@ -57,16 +57,11 @@ jobs:
       - name: Collect artifacts
         id: collect-jars
         run: |
-          # Fabric JAR
-          FABRIC_JAR=$(ls fabric/build/libs/*-${MOD_VERSION}.jar | head -1)
-          echo "FABRIC_JAR=$FABRIC_JAR" >> $GITHUB_ENV
-          
           # NeoForge JAR
-          NEO_JAR=$(ls neoforge/build/libs/*-${MOD_VERSION}.jar | head -1)
+          NEO_JAR=$(ls build/libs/*-${MOD_VERSION}.jar | head -1)
           echo "NEO_JAR=$NEO_JAR" >> $GITHUB_ENV
           
-          # Список всех JAR для релиза
-          echo "ARTIFACTS=${FABRIC_JAR},${NEO_JAR}" >> $GITHUB_ENV
+          echo "ARTIFACTS=${NEO_JAR}" >> $GITHUB_ENV
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -76,7 +71,6 @@ jobs:
           body: |
             ### Minecraft ${{ env.MC_VERSION }}
           files: |
-            ${{ env.FABRIC_JAR }}
             ${{ env.NEO_JAR }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
