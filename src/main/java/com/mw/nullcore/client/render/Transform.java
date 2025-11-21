@@ -1,10 +1,13 @@
 package com.mw.nullcore.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
 
+@OnlyIn(Dist.CLIENT)
 public record Transform(PoseStack ps) {
 
     public static Transform create(PoseStack ps, Consumer<Transform> transform) {

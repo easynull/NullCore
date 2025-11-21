@@ -1,3 +1,2 @@
-- Updated Tracks (work in dungeons)
-- Added screen particle (beta)
+- Updated utils
 - Fixed bugs

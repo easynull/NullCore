@@ -5,12 +5,11 @@ import com.mw.nullcore.client.particle.screen.ParticleEmitterHandler;
 import com.mw.nullcore.core.NcConfig;
 import com.mw.nullcore.core.NcUtils;
 import com.mw.nullcore.core.builders.CommandBuilder;
-import com.mw.nullcore.core.holders.OuterItem;
 import com.mw.nullcore.core.items.CreativeContent;
 import com.mw.nullcore.core.items.Renderable;
 import com.mw.nullcore.registers.NcComponents;
 import com.mw.nullcore.registers.NcEntities;
-import com.mw.nullcore.registers.NcOthers;
+import com.mw.nullcore.registers.NcEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -42,7 +41,7 @@ public final class NullCore {
                 });
             }
         });
-        game.addListener(NcOthers::onResourceReload);
+        game.addListener(NcEvents::onResourceReload);
         bus.addListener(this::client);
 //        OuterItem items = OuterItem.create(ID);
 //        items.registerItem("test", TestItem::new);

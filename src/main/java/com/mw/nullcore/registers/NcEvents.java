@@ -8,7 +8,7 @@ import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 
 import static com.mw.nullcore.NullCore.ID;
 
-public final class NcOthers {
+public final class NcEvents {
     public static void onResourceReload(AddServerReloadListenersEvent event) {
         event.addListener(ResourceLocation.fromNamespaceAndPath(ID, "biome_rules"), new BiomeRulesManager());
         event.addListener(ResourceLocation.fromNamespaceAndPath(ID, "tracks"), new TracksManager());

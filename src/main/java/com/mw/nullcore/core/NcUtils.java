@@ -9,6 +9,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.serialization.JsonOps;
+import com.mw.nullcore.NullCore;
 import com.mw.nullcore.client.render.ShyModel;
 import com.mw.nullcore.core.blocks.type.ContainerBlockEntity;
 import com.mw.nullcore.core.builders.ArmorMaterialBuilder;
@@ -22,6 +24,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.*;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -30,12 +33,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
@@ -44,6 +49,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
@@ -60,6 +66,9 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -73,11 +82,15 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 public final class NcUtils {
+    @OnlyIn(Dist.CLIENT)
     public static final @NotNull Minecraft mc = Minecraft.getInstance();
-    public static final RandomSource rand = RandomSource.create(1L);
+    @OnlyIn(Dist.CLIENT)
     public static final @NotNull Font font = mc.font;
+    @OnlyIn(Dist.CLIENT)
     public static final float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+    @OnlyIn(Dist.CLIENT)
     public static int clientTick;
+    public static final RandomSource rand = RandomSource.create(1L);
 
     public static final class Block {
         public static void forEachCube(BlockPos center, int radius, Consumer<BlockPos> action) {
@@ -233,6 +246,11 @@ public final class NcUtils {
             return new LootParams.Builder(level).withParameter(LootContextParams.THIS_ENTITY, entity).withParameter(LootContextParams.ORIGIN, pos).withLuck(luck).create(LootContextParamSets.GIFT);
         }
 
+        public static LootParams getParamsWithPlayer(ServerLevel level, Vec3 pos, Entity entity, float luck, ContextKeySet param) {
+            ServerPlayer fakePlayer = FakePlayerFactory.getMinecraft(level);
+            return new LootParams.Builder(level).withParameter(LootContextParams.THIS_ENTITY, entity).withParameter(LootContextParams.ORIGIN, pos).withParameter(LootContextParams.DAMAGE_SOURCE, level.damageSources().playerAttack(fakePlayer)).withParameter(LootContextParams.LAST_DAMAGE_PLAYER, fakePlayer).withParameter(LootContextParams.ATTACKING_ENTITY, fakePlayer).withLuck(luck).create(param);
+        }
+
         public static List<ItemStack> createLoot(ResourceKey<LootTable> id, LootParams params) {
             LootTable loot = getLootTable(params.getLevel(), id);
             if (loot == LootTable.EMPTY) return Lists.newArrayList();
@@ -272,6 +290,7 @@ public final class NcUtils {
     }
 
     public static final class Client {
+        @OnlyIn(Dist.CLIENT)
         public static void setSafeScreen(Screen screen) {
             try {
                 if (!mc.isSameThread()) {
@@ -289,6 +308,7 @@ public final class NcUtils {
             return advancement != null && player.getAdvancements().getOrStartProgress(advancement).isDone();
         }
 
+        @OnlyIn(Dist.CLIENT)
         public static void sendMessage(Player player, Component key) {
             if (key != null) {
                 player.displayClientMessage(key, true);
@@ -438,6 +458,16 @@ public final class NcUtils {
             forParticleSpawn(level, particle, pX, pY, pZ, 0, 0, 0, count);
         }
 
+        public static <T extends ParticleOptions> boolean sendPlayerParticles(ServerPlayer player, T particle, double posX, double posY, double posZ, int count, double xDist, double yDist, double zDist, double maxSpeed) {
+            ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(particle, false, false, posX, posY, posZ, (float)xDist, (float)yDist, (float)zDist, (float)maxSpeed, count);
+            BlockPos playerPos = player.blockPosition();
+            if (playerPos.closerToCenterThan(new Vec3(posX, posY, posZ), 32.0f)) {
+                player.connection.send(packet);
+                return true;
+            }
+            return false;
+        }
+
         public static void writeParticle(CompoundTag tag, ParticleOptions particle) {
             CompoundTag pTag = new CompoundTag();
             ResourceLocation loc = BuiltInRegistries.PARTICLE_TYPE.getKey(particle.getType());
@@ -452,6 +482,7 @@ public final class NcUtils {
         }
     }
 
+    @OnlyIn(Dist.CLIENT)
     public static final class Render {
         public static final MultiBufferSource mBuffer = mc.renderBuffers().bufferSource();
 
@@ -461,6 +492,14 @@ public final class NcUtils {
 
         public static void drawTexture(GuiGraphics gg, ResourceLocation texture, int x, int y, int u, int v, int pixelWidth, int pixelHeight, int width, int height) {
             drawTexture(gg, texture, x, y, u, v, pixelWidth, pixelHeight, width, height, 0xFFFFFFFF);
+        }
+
+        public static void drawFullTexture(GuiGraphics gui, ResourceLocation texture, float x, float y, float size, int color) {
+            gui.blit(RenderType::guiTextured, texture, (int)x, (int)y, 0, 0, (int)size, (int)size, (int)size, (int)size, color);
+        }
+
+        public static void drawFullTexture(GuiGraphics gui, ResourceLocation texture, float x, float y, float size) {
+            drawFullTexture(gui, texture, x, y, size, 0xFFFFFFFF);
         }
 
         public static void drawLine(PoseStack ps, VertexConsumer buffer, float x1, float y1, float z1, float x2, float y2, float z2, int color, float width) {
@@ -486,7 +525,6 @@ public final class NcUtils {
 
         public static void renderRays(PoseStack ps, VertexConsumer buffer, int color, float time, float pTick) {
             ps.pushPose();
-            RandomSource rand = RandomSource.create(1L);
             float rotationTime = ((clientTick + pTick) * rand.nextFloat() + 0.5f) * time;
             float[] rgb = Color.unpack(color, false);
             int count = rand.nextInt(10, 25);
@@ -825,6 +863,28 @@ public final class NcUtils {
                 }
                 array.add(nestedArray);
             }
+        }
+
+        public static  <T> void applyComponents(ItemStack stack, JsonObject json) {
+            DataComponentPatch.Builder patch = DataComponentPatch.builder();
+
+            json.entrySet().forEach(entry -> {
+                String key = entry.getKey();
+                JsonElement value = entry.getValue();
+
+                ResourceLocation componentId = ResourceLocation.tryParse(key);
+                if (componentId == null) return;
+
+                DataComponentType<T> type = (DataComponentType<T>) BuiltInRegistries.DATA_COMPONENT_TYPE.getValue(componentId);
+                if (type == null) {
+                    NullCore.LOGGER.warn("Unknown DataComponent: {}", key);
+                    return;
+                }
+
+                type.codec().parse(JsonOps.INSTANCE, value).result().ifPresent(parsedValue -> patch.set(type, parsedValue));
+            });
+
+            stack.applyComponents(patch.build());
         }
     }
 }

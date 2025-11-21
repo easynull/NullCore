@@ -56,7 +56,7 @@ modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "${mod_id}"
     uploadFile = jar
-    versionName = "${minecraft_version}-${mod_version}-neoforge"
+    versionName = "${mod_version}-neoforge"
     versionNumber = "${mod_version}"
     versionType = "${releaseType}"
     gameVersions = ["${minecraft_version}"] as Iterable<? extends String>
@@ -70,7 +70,7 @@ tasks.register('curseforge', TaskPublishCurseForge) {
     mainFile.changelog = rootProject.file('changelog.md').text
     mainFile.addGameVersion(minecraft_version)
     mainFile.releaseType = "${releaseType}"
-    mainFile.displayName = "${minecraft_version}-${mod_version}-neoforge"
+    mainFile.displayName = "${mod_version}-neoforge"
     mainFile.addModLoader("NeoForge")
 }
 

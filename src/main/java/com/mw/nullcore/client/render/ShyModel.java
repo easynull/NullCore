@@ -2,9 +2,12 @@ package com.mw.nullcore.client.render;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Arrays;
 
+@OnlyIn(Dist.CLIENT)
 public final class ShyModel {
     private final boolean[] renderSides = new boolean[]{true, true, true, true, true, true, false};
     public final TextureAtlasSprite[] textures = new TextureAtlasSprite[6];

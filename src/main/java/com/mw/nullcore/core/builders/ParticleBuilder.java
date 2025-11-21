@@ -1,4 +1,4 @@
-package com.mw.nullcore.core.builders;//package com.mw.nullcore.core.builders;
+package com.mw.nullcore.core.builders;
 //
 //import net.minecraft.client.particle.ParticleRenderType;
 //import net.minecraft.client.renderer.RenderType;

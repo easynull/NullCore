@@ -9,10 +9,13 @@ import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.state.ItemEntityRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 import static com.mw.nullcore.core.NcUtils.Render.renderRays;
 
+@OnlyIn(Dist.CLIENT)
 public final class ShyItemRender extends ItemEntityRenderer {
 
     public ShyItemRender(EntityRendererProvider.Context context) {

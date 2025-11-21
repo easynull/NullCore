@@ -7,11 +7,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.function.Function;
 
+@OnlyIn(Dist.CLIENT)
 public final class GuiRenderBuilder {
     private final MultiBufferSource mBuffer = NcUtils.Render.mBuffer;
     private float u0, v0, u1, v1, a = 1f;

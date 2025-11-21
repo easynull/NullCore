@@ -12,9 +12,12 @@ import net.minecraft.client.renderer.entity.state.FallingBlockRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Random;
 
+@OnlyIn(Dist.CLIENT)
 public final class ShyBlockRender extends EntityRenderer<ShyBlockEntity, ShyBlockRender.ShyBlockState> {
     final EntityRendererProvider.Context context;
     public ShyBlockRender(EntityRendererProvider.Context context) {

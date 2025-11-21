@@ -20,8 +20,8 @@ public record StagerPacket(ResourceLocation stage) implements ClientChannel<Stag
         return TYPE;
     }
 
-    @Override
     @OnlyIn(Dist.CLIENT)
+    @Override
     public void handleClient(StagerPacket packet, IPayloadContext ctx) {
         TrackerTicker.currentStage = stage;
     }

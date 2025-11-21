@@ -8,6 +8,8 @@ import com.mw.nullcore.client.particle.data.SpriteParticleData;
 import com.mw.nullcore.client.particle.screen.*;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.util.RandomSource;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -15,13 +17,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@OnlyIn(Dist.CLIENT)
 public final class ScreenParticleBuilder {
     RandomSource random = RandomSource.create();
-    double vx = 0, vy = 0, vz = 0;
-    double fvx = 0, fvy = 0, fvz = 0;
-    double fdx = 0, fdy = 0, fdz = 0;
-    double maxXSpeed = 0, maxYSpeed = 0, maxZSpeed = 0;
-    double maxXDist = 0, maxYDist = 0, maxZDist = 0;
+    double vx = 0;
+    double vy = 0;
+    double maxXSpeed = 0;
+    double maxYSpeed = 0;
+    double maxXDist = 0;
+    double maxYDist = 0;
     final ScreenParticleType<?> type;
     final ScreenParticleOptions options;
     final ScreenParticleHolder target;

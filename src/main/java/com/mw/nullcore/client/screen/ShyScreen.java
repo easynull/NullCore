@@ -3,6 +3,7 @@ package com.mw.nullcore.client.screen;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -22,9 +23,9 @@ public abstract class ShyScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics gg, int mouseX, int mouseY, float pTicks) {
+    public void render(GuiGraphics gg, int mouseX, int mouseY, float pTick) {
         markGG(gg);
-        renderBackground(gg, mouseX, mouseY, pTicks);
+        renderBackground(gg, mouseX, mouseY, pTick);
         if (animIDs != null) {
             autoPose(() -> {
                 for (int id : animIDs) {
@@ -34,10 +35,10 @@ public abstract class ShyScreen extends Screen {
                         case 2 -> scale(guiXCenter(), guiYCenter(), ticks, ticks, ticks);
                     }
                 }
-                draw(gg, mouseX, mouseY, pTicks);
+                draw(gg, mouseX, mouseY, pTick);
             });
         } else {
-            draw(gg, mouseX, mouseY, pTicks);
+            draw(gg, mouseX, mouseY, pTick);
         }
     }
 
@@ -46,7 +47,11 @@ public abstract class ShyScreen extends Screen {
         ticks = (float) Mth.clamp(ticks + 0.03 * (1.0 + 10.0 * ticks), 0, 1);
     }
 
-    protected abstract void draw(GuiGraphics gg, int mouseX, int mouseY, float pTicks);
+    protected void draw(GuiGraphics gg, int mouseX, int mouseY, float pTick){
+        for(Renderable renderable : this.renderables) {
+            renderable.render(gg, mouseX, mouseY, pTick);
+        }
+    }
 
     public Minecraft mc() {
         return Minecraft.getInstance();

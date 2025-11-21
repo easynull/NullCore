@@ -7,8 +7,11 @@ import com.mw.nullcore.core.NcUtils;
 import net.minecraft.client.renderer.ShaderProgram;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.lwjgl.opengl.GL11;
 
+@OnlyIn(Dist.CLIENT)
 public interface NcRenderType {
     NcRenderType ADDITIVE = new NcRenderType() {
         @Override
