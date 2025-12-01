@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 
 @OnlyIn(Dist.CLIENT)
 public record Transform(PoseStack ps) {
-
     public static Transform create(PoseStack ps, Consumer<Transform> transform) {
         Transform tr = new Transform(ps);
         transform.accept(tr);

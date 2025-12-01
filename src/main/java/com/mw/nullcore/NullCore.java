@@ -5,8 +5,12 @@ import com.mw.nullcore.client.particle.screen.ParticleEmitterHandler;
 import com.mw.nullcore.core.NcConfig;
 import com.mw.nullcore.core.NcUtils;
 import com.mw.nullcore.core.builders.CommandBuilder;
+import com.mw.nullcore.core.holders.OuterBlock;
+import com.mw.nullcore.core.holders.OuterMultiblock;
 import com.mw.nullcore.core.items.CreativeContent;
 import com.mw.nullcore.core.items.Renderable;
+import com.mw.nullcore.core.multiblocks.BaseMultiBlock;
+import com.mw.nullcore.core.multiblocks.Blueprint;
 import com.mw.nullcore.registers.NcComponents;
 import com.mw.nullcore.registers.NcEntities;
 import com.mw.nullcore.registers.NcEvents;
@@ -15,12 +19,18 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.MultifaceBlock;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import org.slf4j.Logger;
 
 @Mod(NullCore.ID)
@@ -28,7 +38,7 @@ public final class NullCore {
     public static final String ID = "nullcore";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public NullCore(IEventBus bus) {
+    public NullCore(final IEventBus bus) {
         final IEventBus game = NeoForge.EVENT_BUS;
         NcComponents.components.register(bus);
         NcEntities.entities.register(bus);
@@ -41,11 +51,8 @@ public final class NullCore {
                 });
             }
         });
-        game.addListener(NcEvents::onResourceReload);
+        game.addListener(NcEvents::onRegistryResource);
         bus.addListener(this::client);
-//        OuterItem items = OuterItem.create(ID);
-//        items.registerItem("test", TestItem::new);
-//        items.register(bus);
     }
 
     public void client(final FMLClientSetupEvent event) {

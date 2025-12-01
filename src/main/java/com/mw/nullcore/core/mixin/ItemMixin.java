@@ -26,14 +26,14 @@ import static com.mw.nullcore.core.NcUtils.Client.setSafeScreen;
 public final class ItemMixin {
     @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
     private void nc$useOn(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
-        Item self = (Item) ((Object) this);
+        ItemStack stack = context.getItemInHand();
         Level level = context.getLevel();
         Player player = context.getPlayer();
         BlockPos pos = context.getClickedPos();
-        if (!level.isClientSide && player != null) {
+        if (player != null) {
             OuterMultiblock.multiblocks.values().stream()
-                    .filter(print -> print.getActivator() == self)
-                    .filter(print -> print.canActivate(player, level, self.getDefaultInstance()))
+                    .filter(print -> print.getActivator() == stack.getItem())
+                    .filter(print -> print.canActivate(player, level, stack))
                     .findFirst().ifPresent(print -> {
                         Blueprint.Structure structure = print.getStructure(level, pos);
                         if (structure != null) {

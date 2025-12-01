@@ -6,21 +6,25 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import com.mojang.serialization.JsonOps;
 import com.mw.nullcore.NullCore;
 import com.mw.nullcore.client.render.ShyModel;
 import com.mw.nullcore.core.blocks.type.ContainerBlockEntity;
 import com.mw.nullcore.core.builders.ArmorMaterialBuilder;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.*;
@@ -41,7 +45,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.context.ContextKeySet;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
@@ -49,7 +52,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
@@ -189,17 +192,20 @@ public final class NcUtils {
             }
             return false;
         }
+
+        public static net.minecraft.world.level.block.Block[] getClassBlocks(Class<?>... classes) {
+            DefaultedRegistry<net.minecraft.world.level.block.Block> blocks = BuiltInRegistries.BLOCK;
+            ArrayList<net.minecraft.world.level.block.Block> matchingBlocks = new ArrayList<>();
+            for (var block : blocks) {
+                if (Arrays.stream(classes).anyMatch(b -> b.isInstance(block))) {
+                    matchingBlocks.add(block);
+                }
+            }
+            return matchingBlocks.toArray(new net.minecraft.world.level.block.Block[0]);
+        }
     }
 
     public static final class Item {
-        public static NonNullList<ItemStack> inventoryToList(Container inv) {
-            NonNullList<ItemStack> list = NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
-            for (int i = 0; i < inv.getContainerSize(); i++) {
-                list.set(i, inv.getItem(i).copy());
-            }
-            return list;
-        }
-
         public static boolean insertItem(ContainerBlockEntity be, Player player, int slot, int maxTransfer) {
             SimpleContainer inv = be.getInventory();
             ItemStack slotStack = inv.getItem(slot);
@@ -300,7 +306,8 @@ public final class NcUtils {
                 if (mc.level == null || mc.player == null) return;
                 if (!mc.level.isClientSide()) return;
                 mc.setScreen(screen);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
         public static boolean hasAdvancement(ServerPlayer player, ResourceLocation id) {
@@ -458,8 +465,24 @@ public final class NcUtils {
             forParticleSpawn(level, particle, pX, pY, pZ, 0, 0, 0, count);
         }
 
+        public static void forAxisParticle(BlockPos pos, ParticleOptions particle) {
+            ClientLevel level = mc.level;
+            RandomSource rand = level.random;
+
+            for(Direction direction : Direction.values()) {
+                BlockPos dirPos = pos.relative(direction);
+                if (!level.getBlockState(dirPos).isSolidRender()) {
+                    Direction.Axis axis = direction.getAxis();
+                    float d1 = axis == Direction.Axis.X ? 0.5F + 0.5625F * direction.getStepX() : rand.nextFloat();
+                    float d2 = axis == Direction.Axis.Y ? 0.5F + 0.5625F * direction.getStepY() : rand.nextFloat();
+                    float d3 = axis == Direction.Axis.Z ? 0.5F + 0.5625F * direction.getStepZ() : rand.nextFloat();
+                    level.addParticle(particle, pos.getX() + d1, pos.getY() + d2, pos.getZ() + d3, 0.0F, 0.0F, 0.0F);
+                }
+            }
+        }
+
         public static <T extends ParticleOptions> boolean sendPlayerParticles(ServerPlayer player, T particle, double posX, double posY, double posZ, int count, double xDist, double yDist, double zDist, double maxSpeed) {
-            ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(particle, false, false, posX, posY, posZ, (float)xDist, (float)yDist, (float)zDist, (float)maxSpeed, count);
+            ClientboundLevelParticlesPacket packet = new ClientboundLevelParticlesPacket(particle, false, false, posX, posY, posZ, (float) xDist, (float) yDist, (float) zDist, (float) maxSpeed, count);
             BlockPos playerPos = player.blockPosition();
             if (playerPos.closerToCenterThan(new Vec3(posX, posY, posZ), 32.0f)) {
                 player.connection.send(packet);
@@ -484,6 +507,7 @@ public final class NcUtils {
 
     @OnlyIn(Dist.CLIENT)
     public static final class Render {
+        private static final int U0 = 0, U1 = 1, V0 = 2, V1 = 3;
         public static final MultiBufferSource mBuffer = mc.renderBuffers().bufferSource();
 
         public static void drawTexture(GuiGraphics gg, ResourceLocation texture, int x, int y, int u, int v, int pixelWidth, int pixelHeight, int width, int height, int color) {
@@ -495,23 +519,34 @@ public final class NcUtils {
         }
 
         public static void drawFullTexture(GuiGraphics gui, ResourceLocation texture, float x, float y, float size, int color) {
-            gui.blit(RenderType::guiTextured, texture, (int)x, (int)y, 0, 0, (int)size, (int)size, (int)size, (int)size, color);
+            gui.blit(RenderType::guiTextured, texture, (int) x, (int) y, 0, 0, (int) size, (int) size, (int) size, (int) size, color);
         }
 
         public static void drawFullTexture(GuiGraphics gui, ResourceLocation texture, float x, float y, float size) {
             drawFullTexture(gui, texture, x, y, size, 0xFFFFFFFF);
         }
 
-        public static void drawLine(PoseStack ps, VertexConsumer buffer, float x1, float y1, float z1, float x2, float y2, float z2, int color, float width) {
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.lineWidth(width);
+        public static void drawLine(GuiGraphics gg, RenderType type, float startX, float startY, float endX, float endY, int color, float thickness) {
+            float dx = endX - startX;
+            float dy = endY - startY;
+            float length = (float) Math.sqrt(dx * dx + dy * dy);
+            if (length < 0.5f) return;
 
-            PoseStack.Pose pose = ps.last();
-            buffer.addVertex(pose.pose(), x1, y1, z1).setColor(color);
-            buffer.addVertex(pose.pose(), x2, y2, z2).setColor(color);
+            float angle = (float) Math.toDegrees(Math.atan2(dy, dx));
 
-            RenderSystem.disableBlend();
+            PoseStack pose = gg.pose();
+            pose.pushPose();
+            pose.translate(startX, startY, 0);
+            pose.mulPose(Axis.ZP.rotationDegrees(angle));
+
+            int half = (int) (thickness / 2f);
+            gg.fill(type, 0, -half, (int) length, half + (thickness % 2 == 0 ? 0 : 1), color);
+
+            pose.popPose();
+        }
+
+        public static void drawLine(GuiGraphics gg, float startX, float startY, float endX, float endY, int color, float thickness) {
+            drawLine(gg, RenderType.gui(), startX, startY, endX, endY, color, thickness);
         }
 
         public static void drawText(GuiGraphics gg, Object text, int x, int y, int color, boolean shadow) {
@@ -525,6 +560,7 @@ public final class NcUtils {
 
         public static void renderRays(PoseStack ps, VertexConsumer buffer, int color, float time, float pTick) {
             ps.pushPose();
+            RandomSource rand = RandomSource.create(1L);
             float rotationTime = ((clientTick + pTick) * rand.nextFloat() + 0.5f) * time;
             float[] rgb = Color.unpack(color, false);
             int count = rand.nextInt(10, 25);
@@ -555,104 +591,201 @@ public final class NcUtils {
             ps.popPose();
         }
 
-        private static Vector3f withValue(Vector3f vector, Direction.Axis axis, float value) {
-            if (axis == Direction.Axis.X) {
-                return new Vector3f(value, vector.y(), vector.z());
-            } else if (axis == Direction.Axis.Y) {
-                return new Vector3f(vector.x(), value, vector.z());
-            } else if (axis == Direction.Axis.Z) {
-                return new Vector3f(vector.x(), vector.y(), value);
-            }
-            throw new RuntimeException("Was given a null axis! That was probably not intentional, consider this a bug! (Vector = " + vector + ")");
+        public static void renderItem(PoseStack ps, ItemDisplayContext ctx, MultiBufferSource bufferSource, ItemStack stack, net.minecraft.world.level.Level level, BlockPos pos, Direction lightFacing) {
+            if (stack.isEmpty()) return;
+            int light = LevelRenderer.getLightColor(level, level.getBlockState(pos), pos.relative(lightFacing));
+            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ctx, light, OverlayTexture.NO_OVERLAY, ps, bufferSource, level, 0);
+        }
+
+        public static Vector3f withValue(Vector3f vector, Direction.Axis axis, float value) {
+            return switch (axis) {
+                case X -> new Vector3f(value, vector.y(), vector.z());
+                case Y -> new Vector3f(vector.x(), value, vector.z());
+                case Z -> new Vector3f(vector.x(), vector.y(), value);
+            };
         }
 
         public static double getValue(Vec3 vector, Direction.Axis axis) {
-            if (axis == Direction.Axis.X) {
-                return vector.x;
-            } else if (axis == Direction.Axis.Y) {
-                return vector.y;
-            } else if (axis == Direction.Axis.Z) {
-                return vector.z;
-            }
-            throw new RuntimeException("Was given a null axis! That was probably not intentional, consider this a bug! (Vector = " + vector + ")");
+            return switch (axis) {
+                case X -> vector.x;
+                case Y -> vector.y;
+                case Z -> vector.z;
+            };
         }
 
-        private static final int U0 = 0;
-        private static final int U1 = 1;
-        private static final int V0 = 2;
-        private static final int V1 = 3;
         public static void renderCube(ShyModel cube, PoseStack ps, VertexConsumer buffer, int argb, int light, int overlay) {
-            float red = Color.getRed(argb);
-            float green = Color.getGreen(argb);
-            float blue = Color.getBlue(argb);
-            float alpha = Color.getAlpha(argb);
+            float red = Color.getRed(argb), green = Color.getGreen(argb), blue = Color.getBlue(argb), alpha = Color.getAlpha(argb);
             Vec3 size = new Vec3(cube.sizeX(), cube.sizeY(), cube.sizeZ());
             ps.pushPose();
             ps.translate(cube.getMinX(), cube.getMinY(), cube.getMinZ());
             PoseStack.Pose pose = ps.last();
             Matrix4f mat = pose.pose();
-            for (Direction face : Direction.values()) {
-                if (cube.shouldSideRender(face)) {
-                    int ordinal = face.ordinal();
-                    TextureAtlasSprite sprite = cube.textures[ordinal];
-                    if (sprite != null) {
-                        Direction.Axis u = face.getAxis() == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
-                        Direction.Axis v = face.getAxis() == Direction.Axis.Y ? Direction.Axis.Z : Direction.Axis.Y;
-                        float other = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? (float) getValue(size, face.getAxis()) : 0;
+            for (Direction originalFace : Direction.values()) {
+                if (!cube.shouldSideRender(originalFace)) continue;
+                TextureAtlasSprite sprite = cube.textures[originalFace.ordinal()];
+                if (sprite == null) continue;
 
-                        face = face.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? face : face.getOpposite();
-                        Direction opposite = face.getOpposite();
+                Direction.Axis axis = originalFace.getAxis();
+                Direction.Axis u = axis == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
+                Direction.Axis v = axis == Direction.Axis.Y ? Direction.Axis.Z : Direction.Axis.Y;
+                float other = originalFace.getAxisDirection() == Direction.AxisDirection.POSITIVE ? (float) getValue(size, axis) : 0f;
 
-                        float minU = sprite.getU0();
-                        float maxU = sprite.getU1();
-                        float minV = sprite.getV1();
-                        float maxV = sprite.getV0();
-                        double sizeU = getValue(size, u);
-                        double sizeV = getValue(size, v);
-                        for (int uIndex = 0; uIndex < sizeU; uIndex++) {
-                            float[] baseUV = new float[] { minU, maxU, minV, maxV };
-                            double addU = 1;
-                            if (uIndex + addU > sizeU) {
-                                addU = sizeU - uIndex;
-                                baseUV[U1] = baseUV[U0] + (baseUV[U1] - baseUV[U0]) * (float) addU;
-                            }
-                            for (int vIndex = 0; vIndex < sizeV; vIndex++) {
-                                float[] uv = Arrays.copyOf(baseUV, 4);
-                                double addV = 1;
-                                if (vIndex + addV > sizeV) {
-                                    addV = sizeV - vIndex;
-                                    uv[V1] = uv[V0] + (uv[V1] - uv[V0]) * (float) addV;
-                                }
-                                float[] xyz = new float[] { uIndex, (float) (uIndex + addU), vIndex, (float) (vIndex + addV) };
+                Direction face = originalFace.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? originalFace : originalFace.getOpposite();
+                Direction opposite = face.getOpposite();
 
-                                renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, true, false, red, green, blue, alpha, light, overlay);
-                                renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, true, true, red, green, blue, alpha, light, overlay);
-                                renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, false, true, red, green, blue, alpha, light, overlay);
-                                renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, false, false, red, green, blue, alpha, light, overlay);
+                float minU = sprite.getU0(), maxU = sprite.getU1();
+                float minV = sprite.getV1(), maxV = sprite.getV0();
 
-                                renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, false, false, red, green, blue, alpha, light, overlay);
-                                renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, false, true, red, green, blue, alpha, light, overlay);
-                                renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, true, true, red, green, blue, alpha, light, overlay);
-                                renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, true, false, red, green, blue, alpha, light, overlay);
-                            }
-                        }
+                double sizeU = getValue(size, u), sizeV = getValue(size, v);
+
+                for (int uIndex = 0; uIndex < sizeU; uIndex++) {
+                    float u0 = minU, u1 = maxU;
+                    double addU = Math.min(1, sizeU - uIndex);
+                    if (addU < 1) u1 = u0 + (u1 - u0) * (float) addU;
+
+                    for (int vIndex = 0; vIndex < sizeV; vIndex++) {
+                        float v0 = minV, v1 = maxV;
+                        double addV = Math.min(1, sizeV - vIndex);
+                        if (addV < 1) v1 = v0 + (v1 - v0) * (float) addV;
+
+                        float[] xyz = {uIndex, (float) (uIndex + addU), vIndex, (float) (vIndex + addV)};
+                        float[] uv = {u0, u1, v0, v1};
+
+                        renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, true, false, red, green, blue, alpha, light, overlay);
+                        renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, true, true, red, green, blue, alpha, light, overlay);
+                        renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, false, true, red, green, blue, alpha, light, overlay);
+                        renderPoint(mat, pose, buffer, face, u, v, other, uv, xyz, false, false, red, green, blue, alpha, light, overlay);
+
+                        renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, false, false, red, green, blue, alpha, light, overlay);
+                        renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, false, true, red, green, blue, alpha, light, overlay);
+                        renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, true, true, red, green, blue, alpha, light, overlay);
+                        renderPoint(mat, pose, buffer, opposite, u, v, other, uv, xyz, true, false, red, green, blue, alpha, light, overlay);
                     }
                 }
             }
             ps.popPose();
         }
 
-        public static void renderPoint(Matrix4f matrix4f, PoseStack.Pose normal, VertexConsumer buffer, Direction face, Direction.Axis u, Direction.Axis v, float other, float[] uv, float[] xyz, boolean minU, boolean minV, float red, float green, float blue, float alpha, int light, int overlay) {
-            int U_ARRAY = minU ? U0 : U1;
-            int V_ARRAY = minV ? V0 : V1;
-            Vector3f vertex = withValue(Mth.VZERO, u, xyz[U_ARRAY]);
-            vertex = withValue(vertex, v, xyz[V_ARRAY]);
+        private static void addVertex(VertexConsumer buffer, Matrix4f mat, float x, float y, float z, float u, float v, float red, float green, float blue, float alpha, int light, int overlay, PoseStack.Pose pose, Vector3f norm) {
+            float adj = 2.5f;
+            Vector3f adjustedNorm = new Vector3f(norm.x() + adj, norm.y() + adj, norm.z() + adj);
+            adjustedNorm.normalize();
+            buffer.addVertex(mat, x, y, z).setColor(red, green, blue, alpha).setUv(u, v).setOverlay(overlay).setLight(light).setNormal(pose, adjustedNorm.x(), adjustedNorm.y(), adjustedNorm.z());
+        }
+
+        public static void renderSphere(ShyModel sphere, PoseStack ps, VertexConsumer buffer, int argb, int light, int overlay) {
+            float red = Color.getRed(argb), green = Color.getGreen(argb), blue = Color.getBlue(argb), alpha = Color.getAlpha(argb);
+            float radius = (float) ((sphere.sizeX() + sphere.sizeY() + sphere.sizeZ()) / 6.0); // Average radius
+            int stacks = Math.max(8, (int) sphere.sizeY()); // Adjustable detail
+            int sectors = Math.max(8, (int) Math.max(sphere.sizeX(), sphere.sizeZ()));
+            TextureAtlasSprite sprite = sphere.textures[0]; // Use first texture for whole sphere
+            if (sprite == null) return;
+
+            ps.pushPose();
+            ps.translate(sphere.getMinX() + radius, sphere.getMinY() + radius, sphere.getMinZ() + radius); // Center
+            PoseStack.Pose pose = ps.last();
+            Matrix4f mat = pose.pose();
+
+            for (int i = 0; i < stacks; i++) {
+                float phi1 = (float) (Math.PI * i / stacks);
+                float phi2 = (float) (Math.PI * (i + 1) / stacks);
+                float sinPhi1 = (float) Math.sin(phi1), cosPhi1 = (float) Math.cos(phi1);
+                float sinPhi2 = (float) Math.sin(phi2), cosPhi2 = (float) Math.cos(phi2);
+                float v1 = phi1 / (float) Math.PI, v2 = phi2 / (float) Math.PI;
+
+                for (int j = 0; j < sectors; j++) {
+                    float theta1 = (float) (2 * Math.PI * j / sectors);
+                    float theta2 = (float) (2 * Math.PI * (j + 1) / sectors);
+                    float u1 = (float) j / sectors, u2 = (float) (j + 1) / sectors;
+
+                    // Vertex positions and normals
+                    Vector3f p1 = new Vector3f((float) (radius * sinPhi1 * Math.cos(theta1)), radius * cosPhi1, (float) (radius * sinPhi1 * Math.sin(theta1)));
+                    Vector3f n1 = new Vector3f(p1); n1.normalize();
+
+                    Vector3f p2 = new Vector3f((float) (radius * sinPhi1 * Math.cos(theta2)), radius * cosPhi1, (float) (radius * sinPhi1 * Math.sin(theta2)));
+                    Vector3f n2 = new Vector3f(p2); n2.normalize();
+
+                    Vector3f p3 = new Vector3f((float) (radius * sinPhi2 * Math.cos(theta2)), radius * cosPhi2, (float) (radius * sinPhi2 * Math.sin(theta2)));
+                    Vector3f n3 = new Vector3f(p3); n3.normalize();
+
+                    Vector3f p4 = new Vector3f((float) (radius * sinPhi2 * Math.cos(theta1)), radius * cosPhi2, (float) (radius * sinPhi2 * Math.sin(theta1)));
+                    Vector3f n4 = new Vector3f(p4); n4.normalize();
+
+                    // Front
+                    addVertex(buffer, mat, p1.x(), p1.y(), p1.z(), sprite.getU(u1), sprite.getV(v1), red, green, blue, alpha, light, overlay, pose, n1);
+                    addVertex(buffer, mat, p2.x(), p2.y(), p2.z(), sprite.getU(u2), sprite.getV(v1), red, green, blue, alpha, light, overlay, pose, n2);
+                    addVertex(buffer, mat, p3.x(), p3.y(), p3.z(), sprite.getU(u2), sprite.getV(v2), red, green, blue, alpha, light, overlay, pose, n3);
+                    addVertex(buffer, mat, p4.x(), p4.y(), p4.z(), sprite.getU(u1), sprite.getV(v2), red, green, blue, alpha, light, overlay, pose, n4);
+
+                    // Back (reverse order)
+                    addVertex(buffer, mat, p4.x(), p4.y(), p4.z(), sprite.getU(u1), sprite.getV(v2), red, green, blue, alpha, light, overlay, pose, n4.mul(-1));
+                    addVertex(buffer, mat, p3.x(), p3.y(), p3.z(), sprite.getU(u2), sprite.getV(v2), red, green, blue, alpha, light, overlay, pose, n3.mul(-1));
+                    addVertex(buffer, mat, p2.x(), p2.y(), p2.z(), sprite.getU(u2), sprite.getV(v1), red, green, blue, alpha, light, overlay, pose, n2.mul(-1));
+                    addVertex(buffer, mat, p1.x(), p1.y(), p1.z(), sprite.getU(u1), sprite.getV(v1), red, green, blue, alpha, light, overlay, pose, n1.mul(-1));
+                }
+            }
+            ps.popPose();
+        }
+
+        public static void renderPoint(Matrix4f matrix4f, PoseStack.Pose pose, VertexConsumer buffer, Direction face, Direction.Axis u, Direction.Axis v, float other, float[] uv, float[] xyz, boolean minU, boolean minV, float red, float green, float blue, float alpha, int light, int overlay) {
+            int uArr = minU ? U0 : U1;
+            int vArr = minV ? V0 : V1;
+            Vector3f vertex = withValue(Mth.VZERO, u, xyz[uArr]);
+            vertex = withValue(vertex, v, xyz[vArr]);
             vertex = withValue(vertex, face.getAxis(), other);
-            Vec3i normalForFace = face.getUnitVec3i();
-            float adjustment = 2.5F;
-            Vector3f norm = new Vector3f(normalForFace.getX() + adjustment, normalForFace.getY() + adjustment, normalForFace.getZ() + adjustment);
+            Vec3i normalVec = face.getUnitVec3i();
+            float adj = 2.5f;
+            Vector3f norm = new Vector3f(normalVec.getX() + adj, normalVec.getY() + adj, normalVec.getZ() + adj);
             norm.normalize();
-            buffer.addVertex(matrix4f, vertex.x(), vertex.y(), vertex.z()).setColor(red, green, blue, alpha).setUv(uv[U_ARRAY], uv[V_ARRAY]).setOverlay(overlay).setUv2(light, light).setNormal(normal, norm.x(), norm.y(), norm.z());
+//            addVertex(buffer, matrix4f, vertex.x(), vertex.y(), vertex.z(), uv[uArr], uv[vArr], red, green, blue, alpha, light, overlay, pose, norm);
+            buffer.addVertex(matrix4f, vertex.x(), vertex.y(), vertex.z()).setColor(red, green, blue, alpha).setUv(uv[uArr], uv[vArr]).setOverlay(overlay).setLight(light).setNormal(pose, norm.x(), norm.y(), norm.z());
+        }
+
+        public static void renderBillboard(PoseStack poseStack, VertexConsumer buffer, float x, float y, float z, float size, int light, int color) {
+            poseStack.pushPose();
+
+            poseStack.translate(x, y, z);
+
+            Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+            poseStack.mulPose(Axis.YP.rotationDegrees(-camera.getYRot()));
+            poseStack.mulPose(Axis.XP.rotationDegrees(camera.getXRot()));
+
+            float half = size / 2f;
+            poseStack.translate(-half, -half, 0);
+
+            Matrix4f matrix = poseStack.last().pose();
+
+            buffer.addVertex(matrix, 0, size, 0).setColor(color).setUv(0, 1).setLight(light);
+            buffer.addVertex(matrix, 0, 0, 0).setColor(color).setUv(0, 0).setLight(light);
+            buffer.addVertex(matrix, size, 0, 0).setColor(color).setUv(1, 0).setLight(light);
+            buffer.addVertex(matrix, size, size, 0).setColor(color).setUv(1, 1).setLight(light);
+
+            poseStack.popPose();
+        }
+
+        public static void rotateToFacing(PoseStack ps, Direction facing) {
+            switch (facing) {
+                case NORTH -> ps.mulPose(Axis.YP.rotationDegrees(180f));
+                case SOUTH -> ps.mulPose(Axis.YP.rotationDegrees(0f));
+                case WEST -> ps.mulPose(Axis.YP.rotationDegrees(270f));
+                case EAST -> ps.mulPose(Axis.YP.rotationDegrees(90f));
+                case UP -> ps.mulPose(Axis.XP.rotationDegrees(-90f));
+                case DOWN -> ps.mulPose(Axis.XP.rotationDegrees(90f));
+            }
+        }
+
+        public static void rotateMoveToFacing(PoseStack ps, Direction facing, float offset) {
+            ps.translate(0.5f, 0.5f, 0.5f);
+
+            float rotationY = switch (facing) {
+                case NORTH -> 180f;
+                case WEST -> 270f;
+                case EAST -> 90f;
+                default -> 0f;
+            };
+            ps.mulPose(Axis.YP.rotationDegrees(rotationY));
+            float distanceFromCenter = 0.5f - offset;
+            ps.translate(0, 0, -distanceFromCenter);
         }
 
         public static float getAnimationTick(float pTick) {
@@ -865,7 +998,7 @@ public final class NcUtils {
             }
         }
 
-        public static  <T> void applyComponents(ItemStack stack, JsonObject json) {
+        public static <T> void applyComponents(ItemStack stack, JsonObject json) {
             DataComponentPatch.Builder patch = DataComponentPatch.builder();
 
             json.entrySet().forEach(entry -> {

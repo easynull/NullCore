@@ -14,6 +14,7 @@ public abstract class ShyScreen extends Screen {
     protected float ticks;
     final int[] animIDs;
     public final int bgWidth, bgHeight;
+    protected float speed = 1f;
 
     protected ShyScreen(int bgWidth, int bgHeight, int... animIDs) {
         super(Component.empty());
@@ -44,7 +45,7 @@ public abstract class ShyScreen extends Screen {
 
     @Override
     public void tick() {
-        ticks = (float) Mth.clamp(ticks + 0.03 * (1.0 + 10.0 * ticks), 0, 1);
+        ticks = (float) Mth.clamp(ticks + 0.03 * (1.0 + 10.0 * ticks), 0, 1) * speed;
     }
 
     protected void draw(GuiGraphics gg, int mouseX, int mouseY, float pTick){

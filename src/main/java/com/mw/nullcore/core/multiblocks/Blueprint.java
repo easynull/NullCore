@@ -1,27 +1,33 @@
 package com.mw.nullcore.core.multiblocks;
 
+import com.ibm.icu.impl.Pair;
+import com.mw.nullcore.core.NcUtils;
+import com.mw.nullcore.core.entities.ShyItemEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 public interface Blueprint {
-
-    Direction validateStructure(Level level, BlockPos centerPos);
+    Direction getDirectionStructure(Level level, BlockPos centerPos);
 
     void onBuilt(Level level, BlockPos startPos, Structure structure);
 
     Structure getStructure(Level level, BlockPos centerPos);
 
-    default boolean canActivate(Player player, Level level, ItemStack stack){
+    default boolean canActivate(Player player, Level level, ItemStack stack) {
         return false;
     }
 
@@ -33,50 +39,66 @@ public interface Blueprint {
             if (facing != null && state.hasProperty(HorizontalDirectionalBlock.FACING)) {
                 state = state.setValue(HorizontalDirectionalBlock.FACING, facing);
             }
-            level.setBlock(pos, state, Block.UPDATE_CLIENTS);
+            level.setBlock(pos, state, 2);
         } else if (result instanceof Item item) {
-            applyItemResult(level, pos, item);
+            ItemStack stack = new ItemStack(item);
+            ShyItemEntity entity = new ShyItemEntity(level, (float) (pos.getX() + 0.5), (float) (pos.getY() + 0.5), (float) (pos.getZ() + 0.5), stack);
+            getEntity().accept(entity);
+            entity.setNoGravity(true);
+            entity.setDeltaMovement(0, 0, 0);
+            level.addFreshEntity(entity);
         }
     }
 
-    default void applyItemResult(Level level, BlockPos pos, Item item){
-        ItemEntity entity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(item));
-        entity.setNoGravity(true);
-        entity.setDeltaMovement(0, 0, 0);
-        if (setItemEntity() != null) entity = setItemEntity();
-        level.addFreshEntity(entity);
+    default void applyEffects(Level level, BlockPos pos) {
+        level.removeBlock(pos, false);
+        if (getEffects() == null || !level.isClientSide()) return;
+        if (getEffects().first != null) {
+            Minecraft.getInstance().player.playSound(getEffects().first);
+        }
+        if (getEffects().second != null) {
+            NcUtils.Particle.forAxisParticle(pos, getEffects().second);
+        } else {
+            level.addDestroyBlockEffect(pos, level.getBlockState(pos));
+        }
     }
 
-    default ItemEntity setItemEntity(){
+    default Consumer<ShyItemEntity> getEntity() {
         return null;
     }
 
-    default Item getActivator(){
+    default Item getActivator() {
         return null;
     }
+
+    default Pair<SoundEvent, ParticleOptions> getEffects() {
+        return null;
+    }
+
+    Blueprint effects(SoundEvent sound, ParticleOptions particle);
 
     record Structure(int xOffset, int yOffset, int zOffset, Direction facing) {}
-    record Result(Object required, Object result) {}
+
+    record ResultEntry(ItemLike required, ItemLike result) {}
 
     class Rotation {
-        int rows;
-        int cols;
+        int rows, cols;
         Object[][] matrix;
 
-        public Rotation(Object[][] matrix) {
-            rows = matrix.length;
-            cols = matrix[0].length;
+        Rotation(Object[][] matrix) {
+            this.rows = matrix.length;
+            this.cols = matrix[0].length;
             this.matrix = new Object[rows][cols];
-            for (int i = 0; i < rows; ++i) {
+            for (int i = 0; i < rows; i++) {
                 System.arraycopy(matrix[i], 0, this.matrix[i], 0, cols);
             }
         }
 
-        public void rotateRight(int times) {
-            for (int a = 0; a < times; ++a) {
+        void rotateRight(int times) {
+            for (int a = 0; a < times; a++) {
                 Object[][] newMatrix = new Object[cols][rows];
-                for (int i = 0; i < rows; ++i) {
-                    for (int j = 0; j < cols; ++j) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         newMatrix[j][rows - i - 1] = matrix[i][j];
                     }
                 }
