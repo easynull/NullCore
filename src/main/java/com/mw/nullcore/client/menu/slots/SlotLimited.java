@@ -6,7 +6,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Predicate;
 
-public final class SlotLimited extends Slot {
+public class SlotLimited extends Slot {
     final Object limiter;
     final Predicate<ItemStack> condition;
 

@@ -2,13 +2,11 @@ package com.mw.nullcore.core;
 
 import com.mw.nullcore.core.managers.ConfigManager;
 
-import java.nio.file.Path;
-
 public final class NcConfig {
     public static ConfigManager.Initialize.Unit<Boolean> enableGuiVFX;
     public static ConfigManager.Initialize.Unit<Byte> radiusEntityTrack;
 
-    public static void init() {
+    public static void register() {
         ConfigManager.register("nullcore", () -> {
             enableGuiVFX = ConfigManager.create(
                     "enable_gui_vfx",

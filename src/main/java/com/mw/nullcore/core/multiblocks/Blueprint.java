@@ -1,6 +1,7 @@
 package com.mw.nullcore.core.multiblocks;
 
 import com.ibm.icu.impl.Pair;
+import com.mw.nullcore.NullCore;
 import com.mw.nullcore.core.NcUtils;
 import com.mw.nullcore.core.entities.ShyItemEntity;
 import net.minecraft.client.Minecraft;
@@ -42,7 +43,7 @@ public interface Blueprint {
             level.setBlock(pos, state, 2);
         } else if (result instanceof Item item) {
             ItemStack stack = new ItemStack(item);
-            ShyItemEntity entity = new ShyItemEntity(level, (float) (pos.getX() + 0.5), (float) (pos.getY() + 0.5), (float) (pos.getZ() + 0.5), stack);
+            ShyItemEntity entity = new ShyItemEntity(level, (float) (pos.getX() + 0.5), (float) (pos.getY() + 0.2), (float) (pos.getZ() + 0.5), stack);
             getEntity().accept(entity);
             entity.setNoGravity(true);
             entity.setDeltaMovement(0, 0, 0);
@@ -51,16 +52,17 @@ public interface Blueprint {
     }
 
     default void applyEffects(Level level, BlockPos pos) {
+        if (level.isClientSide()) {
+            if (getEffects() != null && getEffects().first != null) {
+                Minecraft.getInstance().player.playSound(getEffects().first);
+            }
+            if (getEffects() != null && getEffects().second != null) {
+                NcUtils.Particle.forAxisParticle(pos, getEffects().second);
+            } else {
+                level.addDestroyBlockEffect(pos, level.getBlockState(pos));
+            }
+        }
         level.removeBlock(pos, false);
-        if (getEffects() == null || !level.isClientSide()) return;
-        if (getEffects().first != null) {
-            Minecraft.getInstance().player.playSound(getEffects().first);
-        }
-        if (getEffects().second != null) {
-            NcUtils.Particle.forAxisParticle(pos, getEffects().second);
-        } else {
-            level.addDestroyBlockEffect(pos, level.getBlockState(pos));
-        }
     }
 
     default Consumer<ShyItemEntity> getEntity() {

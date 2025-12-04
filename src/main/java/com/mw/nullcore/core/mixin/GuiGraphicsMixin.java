@@ -2,7 +2,7 @@ package com.mw.nullcore.core.mixin;
 
 import com.mw.nullcore.core.NcUtils;
 import com.mw.nullcore.core.NcConfig;
-import com.mw.nullcore.core.items.Renderable;
+import com.mw.nullcore.core.items.GuiRenderable;
 import com.mw.nullcore.client.particle.screen.ScreenParticleHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -20,7 +20,7 @@ public final class GuiGraphicsMixin {
     private void nc$renderItemEarly(LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset, CallbackInfo ci) {
         GuiGraphics gg = (GuiGraphics) ((Object) this);
         if (!NcConfig.enableGuiVFX.get()) return;
-        NcUtils.Item.instanceOf(stack.getItem(), Renderable.class, item -> {
+        NcUtils.Item.instanceOf(stack.getItem(), GuiRenderable.class, item -> {
             if (item.isParticleRenderable()) ScreenParticleHandler.renderItemStackEarly(gg.pose(), stack, pX, pY);
             else item.renderEarly(null, gg, (ClientLevel) level, NcUtils.partialTick, stack, pX, pY);
         });
@@ -30,7 +30,7 @@ public final class GuiGraphicsMixin {
     private void nc$renderItemLate(LivingEntity entity, Level level, ItemStack stack, int pX, int pY, int seed, int guiOffset, CallbackInfo ci) {
         GuiGraphics gg = (GuiGraphics) ((Object) this);
         if (!NcConfig.enableGuiVFX.get()) return;
-        NcUtils.Item.instanceOf(stack.getItem(), Renderable.class, item -> {
+        NcUtils.Item.instanceOf(stack.getItem(), GuiRenderable.class, item -> {
             if (item.isParticleRenderable()) ScreenParticleHandler.renderItemStackLate();
             else item.renderLate(null, gg, (ClientLevel) level, NcUtils.partialTick, stack, pX, pY);
         });

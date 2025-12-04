@@ -75,7 +75,7 @@ public final class GuiRenderBuilder {
     }
 
     public GuiRenderBuilder color(int color) {
-        this.color = NcUtils.Color.unpack(color, false);
+        this.color = NcUtils.Color.unpackInteger(color, false);
         return this;
     }
 
@@ -85,7 +85,7 @@ public final class GuiRenderBuilder {
     }
 
     public GuiRenderBuilder color(float speed, int... color) {
-        this.color = NcUtils.Color.unpack(NcUtils.Color.getCyclingColor(speed, color), false);
+        this.color = NcUtils.Color.unpackInteger(NcUtils.Color.getCyclingColor(speed, color), false);
         return this;
     }
 

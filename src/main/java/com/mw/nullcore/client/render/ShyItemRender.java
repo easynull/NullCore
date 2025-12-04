@@ -1,5 +1,6 @@
 package com.mw.nullcore.client.render;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mw.nullcore.core.entities.ShyItemEntity;
 import net.minecraft.client.renderer.MultiBufferSource;

@@ -8,12 +8,14 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public final class CommandBuilder {
-    private static final List<Consumer<CommandDispatcher<CommandSourceStack>>> commands = new ArrayList<>();
-    private final List<ArgumentBuilder<CommandSourceStack, ?>> children = new ArrayList<>();
+    private static final Set<Consumer<CommandDispatcher<CommandSourceStack>>> commands = new HashSet<>();
+    private final Set<ArgumentBuilder<CommandSourceStack, ?>> children = new HashSet<>();
     private final String id;
     private int permission = 2;
     private CommandExecutor executor;

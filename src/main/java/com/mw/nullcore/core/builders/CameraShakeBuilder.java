@@ -5,10 +5,12 @@ import net.minecraft.client.Camera;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class CameraShakeBuilder {
-    public static final List<CameraShakeBuilder> shakes = new ArrayList<>();
+    public static final Set<CameraShakeBuilder> shakes = new HashSet<>();
     float frequency, amplitude;
     float distance, maxDistance;
     int time;

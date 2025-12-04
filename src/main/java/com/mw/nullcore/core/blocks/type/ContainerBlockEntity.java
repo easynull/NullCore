@@ -25,7 +25,6 @@ public abstract class ContainerBlockEntity extends BlockEntity implements Contai
             @Override
             public void setChanged() {
                 super.setChanged();
-                ContainerBlockEntity.this.setChanged();
                 NcUtils.Block.updateBlockEntity(ContainerBlockEntity.this);
             }
         };

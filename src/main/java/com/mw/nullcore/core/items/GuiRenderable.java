@@ -8,7 +8,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public interface Renderable {
+public interface GuiRenderable {
     boolean isParticleRenderable();
     @OnlyIn(Dist.CLIENT)
     default void renderLate(ScreenParticleHolder target, GuiGraphics gg, ClientLevel level, float pTick, ItemStack stack, int x, int y) {}

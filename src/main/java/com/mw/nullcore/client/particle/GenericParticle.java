@@ -112,7 +112,7 @@ public final class GenericParticle extends TextureSheetParticle {
 
         this.uo = random.nextFloat();
         this.vo = random.nextFloat();
-//        spriteData.init(this);
+//        spriteData.registerProvider(this);
 
         options.spawnActors.forEach(actor -> actor.accept(this));
         updateTraits();

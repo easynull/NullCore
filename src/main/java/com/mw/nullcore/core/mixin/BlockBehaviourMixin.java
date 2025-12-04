@@ -4,8 +4,6 @@ import com.mw.nullcore.client.screen.ScreenHave;
 import com.mw.nullcore.core.blocks.MenuHave;
 import com.mw.nullcore.core.blocks.SaveDataBlock;
 import com.mw.nullcore.core.blocks.type.ContainerHave;
-import com.mw.nullcore.core.managers.LockableManager;
-import com.mw.nullcore.registers.NcComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Containers;
@@ -59,13 +57,14 @@ public final class BlockBehaviourMixin {
         if (!(state.getBlock() instanceof SaveDataBlock data && state.hasBlockEntity())) return;
         BlockEntity type = level.getBlockEntity(pos);
         ItemStack stack = new ItemStack(state.getBlock().asItem());
-
-        CompoundTag nbt = type.saveCustomOnly(level.registryAccess());
-        CompoundTag additional = data.additionalData(level, pos, state, stack);
-        if (additional != null && !additional.isEmpty()) {
-            additional.getAllKeys().forEach(key -> nbt.put(key, additional.get(key).copy()));
+        if(!data.removeForStack(stack, level, pos, state)) {
+            CompoundTag nbt = type.saveCustomOnly(level.registryAccess());
+            CompoundTag additional = data.additionalData(stack, level, pos, state);
+            if (additional != null && !additional.isEmpty()) {
+                additional.getAllKeys().forEach(key -> nbt.put(key, additional.get(key).copy()));
+            }
+            stack.set(data.getCustomComponent(), nbt);
         }
-        stack.set(NcComponents.NBT, nbt);
         cir.setReturnValue(stack);
     }
 }

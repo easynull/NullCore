@@ -1,6 +1,5 @@
 package com.mw.nullcore.client.audio;
 
-import com.mw.nullcore.NullCore;
 import com.mw.nullcore.core.managers.TracksManager;
 import com.mw.nullcore.core.mixin.SoundManagerAccessor;
 import net.minecraft.client.Minecraft;
@@ -14,13 +13,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 
 @OnlyIn(Dist.CLIENT)
 public final class TrackerTicker {
-    final @NotNull Minecraft mc = Minecraft.getInstance();
+    final static Minecraft mc = Minecraft.getInstance();
     private TrackAmbient track;
     private Track selectedTrack;
     private int timeNextTrack = 300;
@@ -58,7 +56,7 @@ public final class TrackerTicker {
         return true;
     }
 
-    private Track getTrack(HashSet<Track> trackList, Level level){
+    private static Track getTrack(HashSet<Track> trackList, Level level){
         var tl = trackList.stream().toList();
         return trackList.size() > 1 ? tl.get(level.random.nextInt(trackList.size())) : tl.getFirst();
     }

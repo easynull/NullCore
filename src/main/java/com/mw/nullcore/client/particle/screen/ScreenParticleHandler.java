@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mw.nullcore.core.NcUtils;
 import com.mw.nullcore.core.NcConfig;
-import com.mw.nullcore.core.items.Renderable;
+import com.mw.nullcore.core.items.GuiRenderable;
 import com.mw.nullcore.client.particle.screen.keys.ScreenParticleItemStackKey;
 import com.mw.nullcore.client.particle.screen.keys.ScreenParticleItemStackRetrievalKey;
 import net.minecraft.client.Minecraft;
@@ -47,14 +47,14 @@ public final class ScreenParticleHandler {
             }
 
             if (!stack.isEmpty()) {
-                List<Renderable> emitters = ParticleEmitterHandler.EMITTERS.get(stack.getItem());
+                List<GuiRenderable> emitters = ParticleEmitterHandler.EMITTERS.get(stack.getItem());
                 if (emitters != null) {
                     final Matrix4f pose = poseStack.last().pose();
                     int xOffset = (int) (8 + pose.m30());
                     int yOffset = (int) (8 + pose.m31());
                     currentItemX = x + xOffset;
                     currentItemY = y + yOffset;
-                    for (Renderable emitter : emitters) {
+                    for (GuiRenderable emitter : emitters) {
                         ScreenParticleHandler.renderParticles(ScreenParticleHandler.spawnAndPullParticles(minecraft.level, emitter, stack, false));
                         cachedItemParticles = ScreenParticleHandler.spawnAndPullParticles(minecraft.level, emitter, stack, true);
                     }
@@ -63,7 +63,7 @@ public final class ScreenParticleHandler {
         }
     }
 
-    public static ScreenParticleHolder spawnAndPullParticles(ClientLevel level, Renderable emitter, ItemStack stack, boolean isRenderedAfterItem) {
+    public static ScreenParticleHolder spawnAndPullParticles(ClientLevel level, GuiRenderable emitter, ItemStack stack, boolean isRenderedAfterItem) {
         ScreenParticleItemStackRetrievalKey cacheKey = new ScreenParticleItemStackRetrievalKey(renderingHotbar, isRenderedAfterItem, currentItemX, currentItemY);
         ScreenParticleHolder target = ITEM_PARTICLES.computeIfAbsent(new ScreenParticleItemStackKey(renderingHotbar, isRenderedAfterItem, stack), s -> new ScreenParticleHolder());
         pullFromParticleVault(cacheKey, stack, target, isRenderedAfterItem);

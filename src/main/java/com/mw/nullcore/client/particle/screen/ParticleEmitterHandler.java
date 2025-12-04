@@ -1,6 +1,6 @@
 package com.mw.nullcore.client.particle.screen;
 
-import com.mw.nullcore.core.items.Renderable;
+import com.mw.nullcore.core.items.GuiRenderable;
 import net.minecraft.world.item.Item;
 
 import java.util.ArrayList;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 public final class ParticleEmitterHandler {
-    public static final Map<Item, List<Renderable>> EMITTERS = new HashMap<>();
+    public static final Map<Item, List<GuiRenderable>> EMITTERS = new HashMap<>();
 
-    public static void registerEmitters(Item item, Renderable emitter) {
+    public static void registerEmitters(Item item, GuiRenderable emitter) {
         if (EMITTERS.containsKey(item)) {
             EMITTERS.get(item).add(emitter);
         } else {
@@ -19,7 +19,7 @@ public final class ParticleEmitterHandler {
         }
     }
 
-    public static void registerEmitters(Renderable emitter, Item... items) {
+    public static void registerEmitters(GuiRenderable emitter, Item... items) {
         for (Item item : items) {
             registerEmitters(item, emitter);
         }

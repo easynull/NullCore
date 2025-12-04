@@ -85,14 +85,10 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 public final class NcUtils {
-    @OnlyIn(Dist.CLIENT)
-    public static final @NotNull Minecraft mc = Minecraft.getInstance();
-    @OnlyIn(Dist.CLIENT)
-    public static final @NotNull Font font = mc.font;
-    @OnlyIn(Dist.CLIENT)
-    public static final float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-    @OnlyIn(Dist.CLIENT)
-    public static int clientTick;
+    public static final @OnlyIn(Dist.CLIENT) @NotNull Minecraft mc = Minecraft.getInstance();
+    public static final @OnlyIn(Dist.CLIENT) @NotNull Font font = mc.font;
+    public static final @OnlyIn(Dist.CLIENT) float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+    public static @OnlyIn(Dist.CLIENT) int clientTick;
     public static final RandomSource rand = RandomSource.create(1L);
 
     public static final class Block {
@@ -203,6 +199,16 @@ public final class NcUtils {
             }
             return matchingBlocks.toArray(new net.minecraft.world.level.block.Block[0]);
         }
+
+        public static BlockPos transformPosed(Direction dir, BlockPos base, int offsetX, int offsetZ) {
+            return switch (dir) {
+                case NORTH -> base.offset(offsetX, 0, -offsetZ);
+                case EAST -> base.offset(offsetZ, 0, offsetX);
+                case SOUTH -> base.offset(-offsetX, 0, offsetZ);
+                case WEST -> base.offset(-offsetZ, 0, -offsetX);
+                default -> base;
+            };
+        }
     }
 
     public static final class Item {
@@ -227,7 +233,7 @@ public final class NcUtils {
                 inv.setItem(slot, insert);
                 heldStack.shrink(transferAmount);
                 return true;
-            } else if (ItemStack.isSameItem(slotStack, heldStack)) {
+            } else if (ItemStack.isSameItemSameComponents(slotStack, heldStack)) {
                 int spaceAvailable = Math.min(be.maxInSlot, slotStack.getMaxStackSize()) - slotStack.getCount();
                 int transferAmount = Math.min(Math.min(heldStack.getCount(), spaceAvailable), actualMax);
 
@@ -324,23 +330,12 @@ public final class NcUtils {
     }
 
     public static final class Color {
-        public static float[] unpack(int color, boolean asARGB) {
-            return asARGB ?
-                    new float[]{
-                            ((color >> 16) & 0xFF) / 255f,
-                            ((color >> 8) & 0xFF) / 255f,
-                            (color & 0xFF) / 255f,
-                            ((color >> 24) & 0xFF) / 255f
-                    } :
-                    new float[]{
-                            ((color >> 24) & 0xFF) / 255f,
-                            ((color >> 16) & 0xFF) / 255f,
-                            ((color >> 8) & 0xFF) / 255f,
-                            (color & 0xFF) / 255f
-                    };
+        public static float[] unpackInteger(int color, boolean asARGB) {
+            return asARGB ? new float[]{getRed(color), getGreen(color), getBlue(color), getAlpha(color)} :
+                    new float[]{getAlpha(color), getRed(color), getGreen(color), getBlue(color)};
         }
 
-        public static int pack(float r, float g, float b, float a, boolean asARGB) {
+        public static int packFloat(float r, float g, float b, float a, boolean asARGB) {
             return asARGB ? ((int) (a * 255) << 24) | ((int) (r * 255) << 16) | ((int) (g * 255) << 8) | (int) (b * 255) : ((int) (r * 255) << 24) | ((int) (g * 255) << 16) | ((int) (b * 255) << 8) | (int) (a * 255);
         }
 
@@ -364,10 +359,10 @@ public final class NcUtils {
                 factor = 1f;
             }
 
-            float[] c1 = unpack(colors[index], false);
-            float[] c2 = unpack(colors[index + 1], false);
+            float[] c1 = unpackInteger(colors[index], false);
+            float[] c2 = unpackInteger(colors[index + 1], false);
 
-            return pack(net.minecraft.util.Mth.lerp(factor, c1[0], c2[0]), net.minecraft.util.Mth.lerp(factor, c1[1], c2[1]), net.minecraft.util.Mth.lerp(factor, c1[2], c2[2]), net.minecraft.util.Mth.lerp(factor, c1[3], c2[3]), false);
+            return packFloat(net.minecraft.util.Mth.lerp(factor, c1[0], c2[0]), net.minecraft.util.Mth.lerp(factor, c1[1], c2[1]), net.minecraft.util.Mth.lerp(factor, c1[2], c2[2]), net.minecraft.util.Mth.lerp(factor, c1[3], c2[3]), false);
         }
 
         public static int getCyclingColor(float speed, int... colors) {
@@ -451,6 +446,7 @@ public final class NcUtils {
     }
 
     public static final class Particle {
+        @OnlyIn(Dist.CLIENT)
         public static void forParticleSpawn(net.minecraft.world.level.Level level, ParticleOptions particle, float pX, float pY, float pZ, float xSpeed, float ySpeed, float zSpeed, int count) {
             RandomSource rand = level.random;
             for (int i = 0; i < count; i++) {
@@ -460,15 +456,14 @@ public final class NcUtils {
                 level.addParticle(particle, pX + oX, pY + oY, pZ + oZ, xSpeed, ySpeed, zSpeed);
             }
         }
-
+        @OnlyIn(Dist.CLIENT)
         public static void forParticleSpawn(net.minecraft.world.level.Level level, ParticleOptions particle, float pX, float pY, float pZ, int count) {
             forParticleSpawn(level, particle, pX, pY, pZ, 0, 0, 0, count);
         }
-
+        @OnlyIn(Dist.CLIENT)
         public static void forAxisParticle(BlockPos pos, ParticleOptions particle) {
             ClientLevel level = mc.level;
             RandomSource rand = level.random;
-
             for(Direction direction : Direction.values()) {
                 BlockPos dirPos = pos.relative(direction);
                 if (!level.getBlockState(dirPos).isSolidRender()) {
@@ -492,16 +487,12 @@ public final class NcUtils {
         }
 
         public static void writeParticle(CompoundTag tag, ParticleOptions particle) {
-            CompoundTag pTag = new CompoundTag();
-            ResourceLocation loc = BuiltInRegistries.PARTICLE_TYPE.getKey(particle.getType());
-            pTag.putString("namespace", loc.getNamespace());
-            pTag.putString("path", loc.getPath());
-            tag.put("particle", pTag);
+            ResourceLocation id = BuiltInRegistries.PARTICLE_TYPE.getKey(particle.getType());
+            tag.putString("Particle", id.toString());
         }
 
         public static ParticleOptions readParticle(CompoundTag tag) {
-            CompoundTag pTag = (CompoundTag) tag.get("particle");
-            return (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.getOptional(ResourceLocation.fromNamespaceAndPath(pTag.getString("namespace"), pTag.getString("path"))).get();
+            return (ParticleOptions) BuiltInRegistries.PARTICLE_TYPE.getValue(ResourceLocation.tryParse(tag.getString("Particle")));
         }
     }
 
@@ -518,11 +509,11 @@ public final class NcUtils {
             drawTexture(gg, texture, x, y, u, v, pixelWidth, pixelHeight, width, height, 0xFFFFFFFF);
         }
 
-        public static void drawFullTexture(GuiGraphics gui, ResourceLocation texture, float x, float y, float size, int color) {
-            gui.blit(RenderType::guiTextured, texture, (int) x, (int) y, 0, 0, (int) size, (int) size, (int) size, (int) size, color);
+        public static void drawFullTexture(GuiGraphics gui, ResourceLocation texture, float x, float y, int size, int color) {
+            gui.blit(RenderType::guiTextured, texture, (int) x, (int) y, 0, 0, size, size, size, size, color);
         }
 
-        public static void drawFullTexture(GuiGraphics gui, ResourceLocation texture, float x, float y, float size) {
+        public static void drawFullTexture(GuiGraphics gui, ResourceLocation texture, float x, float y, int size) {
             drawFullTexture(gui, texture, x, y, size, 0xFFFFFFFF);
         }
 
@@ -562,7 +553,7 @@ public final class NcUtils {
             ps.pushPose();
             RandomSource rand = RandomSource.create(1L);
             float rotationTime = ((clientTick + pTick) * rand.nextFloat() + 0.5f) * time;
-            float[] rgb = Color.unpack(color, false);
+            float[] rgb = Color.unpackInteger(color, false);
             int count = rand.nextInt(10, 25);
             final Vector3f center = new Vector3f(0, 0, 0);
             for (int l = 0; l < count; l++) {
@@ -594,7 +585,7 @@ public final class NcUtils {
         public static void renderItem(PoseStack ps, ItemDisplayContext ctx, MultiBufferSource bufferSource, ItemStack stack, net.minecraft.world.level.Level level, BlockPos pos, Direction lightFacing) {
             if (stack.isEmpty()) return;
             int light = LevelRenderer.getLightColor(level, level.getBlockState(pos), pos.relative(lightFacing));
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ctx, light, OverlayTexture.NO_OVERLAY, ps, bufferSource, level, 0);
+            mc.getItemRenderer().renderStatic(stack, ctx, light, OverlayTexture.NO_OVERLAY, ps, bufferSource, level, 0);
         }
 
         public static Vector3f withValue(Vector3f vector, Direction.Axis axis, float value) {
@@ -675,10 +666,10 @@ public final class NcUtils {
 
         public static void renderSphere(ShyModel sphere, PoseStack ps, VertexConsumer buffer, int argb, int light, int overlay) {
             float red = Color.getRed(argb), green = Color.getGreen(argb), blue = Color.getBlue(argb), alpha = Color.getAlpha(argb);
-            float radius = (float) ((sphere.sizeX() + sphere.sizeY() + sphere.sizeZ()) / 6.0); // Average radius
-            int stacks = Math.max(8, (int) sphere.sizeY()); // Adjustable detail
+            float radius = (float) ((sphere.sizeX() + sphere.sizeY() + sphere.sizeZ()) / 6.0);
+            int stacks = Math.max(8, (int) sphere.sizeY());
             int sectors = Math.max(8, (int) Math.max(sphere.sizeX(), sphere.sizeZ()));
-            TextureAtlasSprite sprite = sphere.textures[0]; // Use first texture for whole sphere
+            TextureAtlasSprite sprite = sphere.textures[0];
             if (sprite == null) return;
 
             ps.pushPose();
@@ -698,7 +689,6 @@ public final class NcUtils {
                     float theta2 = (float) (2 * Math.PI * (j + 1) / sectors);
                     float u1 = (float) j / sectors, u2 = (float) (j + 1) / sectors;
 
-                    // Vertex positions and normals
                     Vector3f p1 = new Vector3f((float) (radius * sinPhi1 * Math.cos(theta1)), radius * cosPhi1, (float) (radius * sinPhi1 * Math.sin(theta1)));
                     Vector3f n1 = new Vector3f(p1); n1.normalize();
 
@@ -711,13 +701,11 @@ public final class NcUtils {
                     Vector3f p4 = new Vector3f((float) (radius * sinPhi2 * Math.cos(theta1)), radius * cosPhi2, (float) (radius * sinPhi2 * Math.sin(theta1)));
                     Vector3f n4 = new Vector3f(p4); n4.normalize();
 
-                    // Front
                     addVertex(buffer, mat, p1.x(), p1.y(), p1.z(), sprite.getU(u1), sprite.getV(v1), red, green, blue, alpha, light, overlay, pose, n1);
                     addVertex(buffer, mat, p2.x(), p2.y(), p2.z(), sprite.getU(u2), sprite.getV(v1), red, green, blue, alpha, light, overlay, pose, n2);
                     addVertex(buffer, mat, p3.x(), p3.y(), p3.z(), sprite.getU(u2), sprite.getV(v2), red, green, blue, alpha, light, overlay, pose, n3);
                     addVertex(buffer, mat, p4.x(), p4.y(), p4.z(), sprite.getU(u1), sprite.getV(v2), red, green, blue, alpha, light, overlay, pose, n4);
 
-                    // Back (reverse order)
                     addVertex(buffer, mat, p4.x(), p4.y(), p4.z(), sprite.getU(u1), sprite.getV(v2), red, green, blue, alpha, light, overlay, pose, n4.mul(-1));
                     addVertex(buffer, mat, p3.x(), p3.y(), p3.z(), sprite.getU(u2), sprite.getV(v2), red, green, blue, alpha, light, overlay, pose, n3.mul(-1));
                     addVertex(buffer, mat, p2.x(), p2.y(), p2.z(), sprite.getU(u2), sprite.getV(v1), red, green, blue, alpha, light, overlay, pose, n2.mul(-1));
@@ -727,7 +715,7 @@ public final class NcUtils {
             ps.popPose();
         }
 
-        public static void renderPoint(Matrix4f matrix4f, PoseStack.Pose pose, VertexConsumer buffer, Direction face, Direction.Axis u, Direction.Axis v, float other, float[] uv, float[] xyz, boolean minU, boolean minV, float red, float green, float blue, float alpha, int light, int overlay) {
+        public static void renderPoint(Matrix4f matrix, PoseStack.Pose pose, VertexConsumer buffer, Direction face, Direction.Axis u, Direction.Axis v, float other, float[] uv, float[] xyz, boolean minU, boolean minV, float red, float green, float blue, float alpha, int light, int overlay) {
             int uArr = minU ? U0 : U1;
             int vArr = minV ? V0 : V1;
             Vector3f vertex = withValue(Mth.VZERO, u, xyz[uArr]);
@@ -737,30 +725,29 @@ public final class NcUtils {
             float adj = 2.5f;
             Vector3f norm = new Vector3f(normalVec.getX() + adj, normalVec.getY() + adj, normalVec.getZ() + adj);
             norm.normalize();
-//            addVertex(buffer, matrix4f, vertex.x(), vertex.y(), vertex.z(), uv[uArr], uv[vArr], red, green, blue, alpha, light, overlay, pose, norm);
-            buffer.addVertex(matrix4f, vertex.x(), vertex.y(), vertex.z()).setColor(red, green, blue, alpha).setUv(uv[uArr], uv[vArr]).setOverlay(overlay).setLight(light).setNormal(pose, norm.x(), norm.y(), norm.z());
+            buffer.addVertex(matrix, vertex.x(), vertex.y(), vertex.z()).setColor(red, green, blue, alpha).setUv(uv[uArr], uv[vArr]).setOverlay(overlay).setLight(light).setNormal(pose, norm.x(), norm.y(), norm.z());
         }
 
-        public static void renderBillboard(PoseStack poseStack, VertexConsumer buffer, float x, float y, float z, float size, int light, int color) {
-            poseStack.pushPose();
+        public static void renderBillboard(PoseStack ps, VertexConsumer buffer, float x, float y, float z, float size, int light, int color) {
+            ps.pushPose();
 
-            poseStack.translate(x, y, z);
+            ps.translate(x, y, z);
 
             Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-            poseStack.mulPose(Axis.YP.rotationDegrees(-camera.getYRot()));
-            poseStack.mulPose(Axis.XP.rotationDegrees(camera.getXRot()));
+            ps.mulPose(Axis.YP.rotationDegrees(-camera.getYRot()));
+            ps.mulPose(Axis.XP.rotationDegrees(camera.getXRot()));
 
             float half = size / 2f;
-            poseStack.translate(-half, -half, 0);
+            ps.translate(-half, -half, 0);
 
-            Matrix4f matrix = poseStack.last().pose();
+            Matrix4f matrix = ps.last().pose();
 
             buffer.addVertex(matrix, 0, size, 0).setColor(color).setUv(0, 1).setLight(light);
             buffer.addVertex(matrix, 0, 0, 0).setColor(color).setUv(0, 0).setLight(light);
             buffer.addVertex(matrix, size, 0, 0).setColor(color).setUv(1, 0).setLight(light);
             buffer.addVertex(matrix, size, size, 0).setColor(color).setUv(1, 1).setLight(light);
 
-            poseStack.popPose();
+            ps.popPose();
         }
 
         public static void rotateToFacing(PoseStack ps, Direction facing) {
@@ -797,18 +784,19 @@ public final class NcUtils {
         }
 
         public static TextureAtlasSprite getSprite(ResourceLocation texture) {
-            TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
+            TextureAtlas atlas = mc.getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
             return atlas.getSprite(texture);
         }
 
         public static TextureAtlasSprite getSpriteOf(ResourceLocation texture) {
-            return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
+            return mc.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
         }
     }
 
     public static final class Text {
+        @OnlyIn(Dist.CLIENT)
         public static void addTooltipWithKey(int button, int colorButton, List<Component> adder, Component... components) {
-            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), button)) {
+            if (InputConstants.isKeyDown(mc.getWindow().getWindow(), button)) {
                 for (Component cm : components) {
                     if (cm != null) adder.add(cm);
                 }
